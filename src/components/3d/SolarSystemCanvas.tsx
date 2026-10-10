@@ -91,7 +91,7 @@ export const SolarSystemCanvas: React.FC<SolarSystemCanvasProps> = ({
 
   const sunData = PLANETS_DATA.find((p) => p.id === 'sun')!;
   const blackHoleData = PLANETS_DATA.find((p) => p.id === 'black-hole');
-  const planetList = PLANETS_DATA.filter((p) => p.id !== 'sun' && p.id !== 'black-hole');
+  const planetList = PLANETS_DATA.filter((p) => p.id !== 'sun' && p.id !== 'black-hole' && p.id !== 'moon');
 
   return (
     <div className="w-full h-full relative cursor-grab active:cursor-grabbing">
@@ -154,6 +154,7 @@ export const SolarSystemCanvas: React.FC<SolarSystemCanvasProps> = ({
             key={planet.id}
             data={planet}
             isSelected={selectedPlanet?.id === planet.id}
+            selectedPlanetId={selectedPlanet?.id}
             onSelect={onSelectPlanet}
             onHover={onHoverPlanet}
             showOrbits={showOrbits}

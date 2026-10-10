@@ -19,7 +19,7 @@ export interface PlanetData {
   id: string;
   name: string;
   tagline: string;
-  type: 'Star' | 'Terrestrial' | 'Gas Giant' | 'Ice Giant' | 'Dwarf Planet' | 'Black Hole';
+  type: 'Star' | 'Terrestrial' | 'Gas Giant' | 'Ice Giant' | 'Dwarf Planet' | 'Black Hole' | 'Moon';
   color: string; // Accent color hex
   secondaryColor: string;
   radius: number; // Artistic scale radius
@@ -109,13 +109,13 @@ export const PLANETS_DATA: PlanetData[] = [
     name: 'Mercury',
     tagline: 'The Scorched Messenger',
     type: 'Terrestrial',
-    color: '#a3a3a3',
-    secondaryColor: '#737373',
+    color: '#e2e8f0',
+    secondaryColor: '#94a3b8',
     radius: 1.1,
     realRadiusKm: 2439.7,
     distanceFromSunAU: 0.387,
     distanceFromSunKm: 57.9,
-    artisticDistance: 16,
+    artisticDistance: 20,
     orbitalPeriodDays: 87.97,
     rotationPeriodHours: 1407.6, // 58.6 Earth days
     axialTiltDeg: 0.034,
@@ -249,6 +249,50 @@ export const PLANETS_DATA: PlanetData[] = [
     explorationMissions: ['Apollo 8 & 11', 'ISS (International Space Station)', 'Terra & Aqua', 'Landsat', 'Sentinel'],
     description: 'The cradle of known life, Earth is a dynamic ocean world with an oxygen-rich atmosphere, protective magnetic field, and active geology.',
     detailedDescription: 'Formed 4.54 billion years ago, Earth sits comfortably within the Sun’s habitable zone. Liquid water covers over 70% of its surface, regulated by an active hydrological cycle and carbon-silicate tectonic cycle. Its active magnetic field deflects the solar wind, shielding the atmosphere from depletion and safeguarding life.'
+  },
+  {
+    id: 'moon',
+    name: 'The Moon',
+    tagline: 'Earth’s Silver Companion · Luna',
+    type: 'Moon',
+    color: '#e2e8f0',
+    secondaryColor: '#94a3b8',
+    radius: 0.65,
+    realRadiusKm: 1737.4,
+    distanceFromSunAU: 1.0,
+    distanceFromSunKm: 149.6,
+    artisticDistance: 34,
+    orbitalPeriodDays: 27.32,
+    rotationPeriodHours: 655.7,
+    axialTiltDeg: 1.54,
+    orbitSpeed: 0.05,
+    massKg: '7.342 × 10²² kg (0.0123 Earths)',
+    gravityMps2: 1.62,
+    surfaceTempC: { min: -173, avg: -130, max: 120 },
+    moonsCount: 0,
+    notableMoons: [],
+    hasRings: false,
+    atmosphereComposition: [
+      { gas: 'Helium (He)', percentage: 29.0 },
+      { gas: 'Neon (Ne)', percentage: 29.0 },
+      { gas: 'Hydrogen (H₂)', percentage: 22.0 },
+      { gas: 'Argon (Ar)', percentage: 20.0 },
+    ],
+    internalStructure: [
+      { name: 'Metallic Core', thickness: '330 km radius', composition: 'Solid iron-nickel inner core & fluid outer shell', color: '#e5e7eb', description: 'Small metallic core with a radius of approximately 330 km, representing only 1-2% of lunar mass.' },
+      { name: 'Partial Melt Boundary', thickness: '150 km', composition: 'Partially molten mantle zone', color: '#f59e0b', description: 'Deep thermal transition boundary where mantle silicates are partially melted.' },
+      { name: 'Silicate Mantle', thickness: '1,000 km', composition: 'Olivine and pyroxene minerals', color: '#94a3b8', description: 'Rigid lithospheric mantle composed of dense magnesium- and iron-rich silicates.' },
+      { name: 'Anorthositic Crust', thickness: '50 km', composition: 'Plagioclase feldspar basalt & regolith', color: '#cbd5e1', description: 'Ancient lunar crust capped in fine pulverized regolith and dark volcanic maria plains.' },
+    ],
+    quickFacts: [
+      'The only celestial body beyond Earth where humans have walked, beginning with Apollo 11 in 1969.',
+      'Tidally locked to Earth, meaning the exact same hemisphere always faces our planet.',
+      'Lacks a substantial atmosphere, leaving millions of craters preserved for billions of years without erosion.',
+      'Responsible for oceanic tides on Earth and stabilizing our planet’s axial tilt, enabling a stable climate.'
+    ],
+    explorationMissions: ['Apollo 11 (Historic 1969 Landing)', 'Luna 2 (First human impact, 1959)', 'Chang\'e 5 (Sample return, 2020)', 'Chandrayaan-3 (South Pole landing, 2023)', 'Artemis Program (Planned return)'],
+    description: 'Earth’s only natural satellite, a tidally locked world of basaltic maria and impact craters that stabilizes our planet’s climate and tides.',
+    detailedDescription: 'The Moon is Earth’s constant companion and the fifth-largest natural satellite in the Solar System. Formed approximately 4.5 billion years ago, likely from the giant impact of a Mars-sized protoplanet (Theia) with early Earth, the Moon has shaped terrestrial history through oceanic tides and orbital stabilization. Its cratered surface and dark basaltic plains (maria) preserve a pristine geological record of the early solar system.'
   },
   {
     id: 'mars',

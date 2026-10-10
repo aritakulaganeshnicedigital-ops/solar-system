@@ -46,6 +46,16 @@ export const PlanetInfoPanel: React.FC<PlanetInfoPanelProps> = ({
                 {/* Relativistic Jets */}
                 <div className="absolute -top-3 -bottom-3 w-[2.5px] bg-cyan-300 shadow-[0_0_8px_cyan] pointer-events-none" />
               </div>
+            ) : planet.id === 'moon' ? (
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 shadow-lg relative overflow-hidden"
+                style={{
+                  boxShadow: '0 0 20px rgba(226, 232, 240, 0.7)',
+                  background: 'radial-gradient(circle at 35% 35%, #ffffff 0%, #cbd5e1 50%, #475569 100%)',
+                }}
+              >
+                <div className="absolute inset-0 rounded-full border border-slate-300/60" />
+              </div>
             ) : (
               <div
                 className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 shadow-lg relative"
@@ -114,17 +124,17 @@ export const PlanetInfoPanel: React.FC<PlanetInfoPanelProps> = ({
               </div>
             </div>
 
-            {/* 2. Distance from Sun */}
+            {/* 2. Distance from Sun / Earth */}
             <div className="p-2.5 rounded-xl bg-space-900/60 border border-slate-800">
               <div className="text-[10px] text-slate-400 flex items-center gap-1.5 mb-1">
                 <Orbit className="w-3 h-3 text-violet-400" />
-                <span>DISTANCE FROM SUN</span>
+                <span>{planet.id === 'moon' ? 'PARENT ORBIT' : 'DISTANCE FROM SUN'}</span>
               </div>
               <div className="font-bold text-slate-100">
-                {planet.distanceFromSunAU === 0 ? '0 AU' : `${planet.distanceFromSunAU} AU`}
+                {planet.id === 'moon' ? 'Orbits Earth' : planet.distanceFromSunAU === 0 ? '0 AU' : `${planet.distanceFromSunAU} AU`}
               </div>
               <div className="text-[10px] text-slate-400">
-                {planet.distanceFromSunKm === 0 ? 'Central Star' : `${planet.distanceFromSunKm}M km`}
+                {planet.id === 'moon' ? '384,400 km avg distance' : planet.distanceFromSunKm === 0 ? 'Central Star' : `${planet.distanceFromSunKm}M km`}
               </div>
             </div>
 

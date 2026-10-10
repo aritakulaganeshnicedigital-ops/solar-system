@@ -102,6 +102,8 @@ export const CameraController: React.FC<CameraControllerProps> = ({
       if (currentPos) {
         const dist = selectedPlanet.id === 'black-hole'
           ? 32
+          : selectedPlanet.id === 'moon'
+          ? 3.2
           : Math.max(3.8, selectedPlanet.radius * 2.8);
         const desiredCamPos = new THREE.Vector3(
           currentPos.x + dist * (selectedPlanet.id === 'black-hole' ? 0.72 : 0.8),

@@ -2,17 +2,19 @@ import React, { useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html, Line } from '@react-three/drei';
 import * as THREE from 'three';
-import type { PlanetData } from '../../data/planetsData';
+import { PLANETS_DATA, PlanetData } from '../../data/planetsData';
 import {
   getPlanetTexture,
   getEarthCloudsTexture,
   getMoonTexture,
   getSaturnRingsTexture
 } from '../../utils/textureGenerator';
+import { audioSystem } from '../../utils/audioSystem';
 
 interface PlanetMeshProps {
   data: PlanetData;
   isSelected: boolean;
+  selectedPlanetId?: string | null;
   onSelect: (planet: PlanetData) => void;
   onHover: (planet: PlanetData | null) => void;
   showOrbits: boolean;
@@ -27,6 +29,7 @@ interface PlanetMeshProps {
 export const PlanetMesh: React.FC<PlanetMeshProps> = ({
   data,
   isSelected,
+  selectedPlanetId,
   onSelect,
   onHover,
   showOrbits,
@@ -40,7 +43,11 @@ export const PlanetMesh: React.FC<PlanetMeshProps> = ({
   const planetBodyRef = useRef<THREE.Mesh>(null);
   const cloudsRef = useRef<THREE.Mesh>(null);
   const moonRef = useRef<THREE.Group>(null);
+  const moonBodyRef = useRef<THREE.Mesh>(null);
   const ringRef = useRef<THREE.Mesh>(null);
+
+  const moonData = useMemo(() => PLANETS_DATA.find((p) => p.id === 'moon'), []);
+  const isSelectedMoon = selectedPlanetId === 'moon';
 
   // Compute radius and distance based on scale mode
   const radius = useMemo(() => {
@@ -85,7 +92,7 @@ export const PlanetMesh: React.FC<PlanetMeshProps> = ({
     const segments = 48;
     for (let i = 0; i <= segments; i++) {
       const theta = (i / segments) * Math.PI * 2;
-      points.push([Math.cos(theta) * radius * 3.2, 0, Math.sin(theta) * radius * 3.2]);
+      points.push([Math.cos(theta) * radius * 3.4, 0, Math.sin(theta) * radius * 3.4]);
     }
     return points;
   }, [radius]);
@@ -101,8 +108,24 @@ export const PlanetMesh: React.FC<PlanetMeshProps> = ({
         }
         return new THREE.Vector3(orbitDistance, 0, 0);
       });
+
+      if (data.id === 'earth') {
+        registerPlanetPosition('moon', () => {
+          if (moonBodyRef.current) {
+            const worldPos = new THREE.Vector3();
+            moonBodyRef.current.getWorldPosition(worldPos);
+            return worldPos;
+          }
+          if (groupRef.current) {
+            const worldPos = new THREE.Vector3();
+            groupRef.current.getWorldPosition(worldPos);
+            return new THREE.Vector3(worldPos.x + radius * 3.4, worldPos.y, worldPos.z);
+          }
+          return new THREE.Vector3(orbitDistance + radius * 3.4, 0, 0);
+        });
+      }
     }
-  }, [data.id, orbitDistance, registerPlanetPosition]);
+  }, [data.id, radius, orbitDistance, registerPlanetPosition]);
 
   useFrame((_, delta) => {
     // 1. Orbital position with calibrated, clearly visible orbital movement:
@@ -259,20 +282,81 @@ export const PlanetMesh: React.FC<PlanetMeshProps> = ({
           {/* Earth's Moon */}
           {data.id === 'earth' && (
             <group ref={moonRef}>
-              <mesh position={[radius * 3.2, 0, 0]}>
-                <sphereGeometry args={[radius * 0.27, 24, 24]} />
+              <mesh
+                ref={moonBodyRef}
+                position={[radius * 3.4, 0, 0]}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (moonData) {
+                    audioSystem.playPlanetSelect();
+                    onSelect(moonData);
+                  }
+                }}
+                onPointerOver={(e) => {
+                  e.stopPropagation();
+                  document.body.style.cursor = 'pointer';
+                  if (moonData) onHover(moonData);
+                }}
+                onPointerOut={() => {
+                  document.body.style.cursor = 'default';
+                  onHover(null);
+                }}
+              >
+                <sphereGeometry args={[radius * 0.28, 24, 24]} />
                 <meshStandardMaterial
                   map={moonTexture || undefined}
                   roughness={0.8}
                 />
               </mesh>
+
+              {/* Selected Target Reticle Halo for Moon */}
+              {isSelectedMoon && (
+                <mesh position={[radius * 3.4, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
+                  <ringGeometry args={[radius * 0.42, radius * 0.48, 32]} />
+                  <meshBasicMaterial
+                    color="#ffffff"
+                    side={THREE.DoubleSide}
+                    transparent
+                    opacity={0.95}
+                  />
+                </mesh>
+              )}
+
+              {/* 3D Floating Interactive Moon Label */}
+              {showLabels && moonData && (
+                <Html
+                  position={[radius * 3.4, radius * 0.28 + 1.8, 0]}
+                  center
+                  distanceFactor={120}
+                  zIndexRange={[100, 0]}
+                >
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      audioSystem.playPlanetSelect();
+                      onSelect(moonData);
+                    }}
+                    className={`group flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono tracking-wider transition-all duration-200 cursor-pointer pointer-events-auto backdrop-blur-md ${
+                      isSelectedMoon
+                        ? 'bg-slate-100/25 text-white border border-slate-100 shadow-[0_0_14px_rgba(255,255,255,0.7)] ring-1 ring-white'
+                        : 'bg-space-900/85 text-slate-200 border border-slate-600/70 hover:border-white hover:text-white hover:shadow-[0_0_10px_rgba(255,255,255,0.3)]'
+                    }`}
+                  >
+                    <span
+                      className="w-1.5 h-1.5 rounded-full bg-slate-200 shadow-[0_0_6px_#ffffff]"
+                    />
+                    <span className="font-semibold uppercase tracking-wider">MOON</span>
+                  </button>
+                </Html>
+              )}
+
               {/* Moon orbit trail */}
               <Line
                 points={moonOrbitPoints}
                 color="#64748b"
                 lineWidth={0.8}
                 transparent
-                opacity={0.25}
+                opacity={0.3}
               />
             </group>
           )}
@@ -306,7 +390,7 @@ export const PlanetMesh: React.FC<PlanetMeshProps> = ({
         {/* 3D Floating Interactive Planet Label */}
         {showLabels && (
           <Html
-            position={[0, radius + 1.8, 0]}
+            position={[0, Math.max(radius * 1.35 + 2.0, 3.8), 0]}
             center
             distanceFactor={120}
             zIndexRange={[100, 0]}
@@ -319,14 +403,17 @@ export const PlanetMesh: React.FC<PlanetMeshProps> = ({
               className={`group flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono tracking-wider transition-all duration-200 cursor-pointer pointer-events-auto backdrop-blur-md ${
                 isSelected
                   ? 'bg-cyan-500/25 text-cyan-accent border border-cyan-400 shadow-[0_0_14px_rgba(0,240,255,0.45)] ring-1 ring-cyan-400'
-                  : 'bg-space-900/85 text-slate-300 border border-slate-700/60 hover:border-cyan-400/60 hover:text-white'
+                  : 'bg-space-900/85 text-slate-200 border border-slate-700/60 hover:border-cyan-400/60 hover:text-white'
               }`}
             >
               <span
                 className="w-1.5 h-1.5 rounded-full"
-                style={{ backgroundColor: data.color }}
+                style={{
+                  backgroundColor: data.color,
+                  boxShadow: `0 0 6px ${data.color}`,
+                }}
               />
-              <span className="font-semibold uppercase">{data.name}</span>
+              <span className="font-semibold uppercase tracking-wider">{data.name}</span>
             </button>
           </Html>
         )}

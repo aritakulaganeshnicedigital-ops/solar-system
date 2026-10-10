@@ -17,7 +17,7 @@ export const PlanetSidebar: React.FC<PlanetSidebarProps> = ({
   setIsCollapsed,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<'All' | 'Terrestrial' | 'Gas Giant' | 'Ice Giant' | 'Singularity'>('All');
+  const [filterType, setFilterType] = useState<'All' | 'Terrestrial' | 'Gas Giant' | 'Ice Giant' | 'Moons' | 'Singularity'>('All');
 
   const filteredPlanets = useMemo(() => {
     return PLANETS_DATA.filter((planet) => {
@@ -26,7 +26,11 @@ export const PlanetSidebar: React.FC<PlanetSidebarProps> = ({
         planet.tagline.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesFilter =
         filterType === 'All' ||
-        (filterType === 'Singularity' ? planet.type === 'Black Hole' : planet.type === filterType);
+        (filterType === 'Singularity'
+          ? planet.type === 'Black Hole'
+          : filterType === 'Moons'
+          ? planet.type === 'Moon'
+          : planet.type === filterType);
       return matchesSearch && matchesFilter;
     });
   }, [searchQuery, filterType]);
@@ -89,7 +93,7 @@ export const PlanetSidebar: React.FC<PlanetSidebarProps> = ({
 
               {/* Filter Pills */}
               <div className="flex items-center gap-1 overflow-x-auto pb-1 no-scrollbar">
-                {(['All', 'Terrestrial', 'Gas Giant', 'Ice Giant', 'Singularity'] as const).map((type) => (
+                {(['All', 'Terrestrial', 'Gas Giant', 'Ice Giant', 'Moons', 'Singularity'] as const).map((type) => (
                   <button
                     key={type}
                     onClick={() => {
@@ -121,6 +125,8 @@ export const PlanetSidebar: React.FC<PlanetSidebarProps> = ({
                       isActive
                         ? planet.id === 'black-hole'
                           ? 'bg-purple-950/40 border-purple-400 shadow-[0_0_18px_rgba(192,132,252,0.35)]'
+                          : planet.id === 'moon'
+                          ? 'bg-slate-100/15 border-slate-300 shadow-[0_0_15px_rgba(255,255,255,0.35)]'
                           : 'bg-cyan-500/15 border-cyan-400 shadow-[0_0_15px_rgba(0,240,255,0.25)]'
                         : 'bg-space-900/40 border-slate-800/80 hover:border-slate-700 hover:bg-space-850/60'
                     }`}
@@ -128,12 +134,16 @@ export const PlanetSidebar: React.FC<PlanetSidebarProps> = ({
                     {/* Active Pulsing Indicator Line */}
                     {isActive && (
                       <div className={`absolute left-0 top-2 bottom-2 w-1 rounded-r ${
-                        planet.id === 'black-hole' ? 'bg-purple-400 shadow-[0_0_8px_rgba(192,132,252,0.8)]' : 'bg-cyan-accent shadow-cyan-glow'
+                        planet.id === 'black-hole'
+                          ? 'bg-purple-400 shadow-[0_0_8px_rgba(192,132,252,0.8)]'
+                          : planet.id === 'moon'
+                          ? 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]'
+                          : 'bg-cyan-accent shadow-cyan-glow'
                       }`} />
                     )}
 
                     <div className="flex items-center gap-3 pl-1">
-                      {/* Stylized Planet/Black Hole Thumbnail Orb */}
+                      {/* Stylized Planet/Black Hole/Moon Thumbnail Orb */}
                       {planet.id === 'black-hole' ? (
                         <div
                           className="relative w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-md transition-transform group-hover:scale-110"
@@ -148,6 +158,16 @@ export const PlanetSidebar: React.FC<PlanetSidebarProps> = ({
                           <div className="w-5 h-5 rounded-full bg-black relative z-10 ring-1 ring-amber-300" />
                           {/* Polar Jets */}
                           <div className="absolute -top-1 -bottom-1 w-[2px] bg-cyan-300 shadow-[0_0_4px_cyan] pointer-events-none" />
+                        </div>
+                      ) : planet.id === 'moon' ? (
+                        <div
+                          className="relative w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-md transition-transform group-hover:scale-110 overflow-hidden"
+                          style={{
+                            boxShadow: isActive ? '0 0 14px rgba(226, 232, 240, 0.8)' : undefined,
+                            background: 'radial-gradient(circle at 35% 35%, #ffffff 0%, #cbd5e1 50%, #475569 100%)',
+                          }}
+                        >
+                          <div className="absolute inset-0 rounded-full border border-slate-400/50" />
                         </div>
                       ) : (
                         <div
@@ -215,6 +235,21 @@ export const PlanetSidebar: React.FC<PlanetSidebarProps> = ({
                     <div className="absolute inset-0 rounded-full border border-amber-400/90 animate-spin" style={{ animationDuration: '3s' }} />
                     <div className="w-4 h-4 rounded-full bg-black ring-1 ring-purple-400" />
                   </button>
+                );
+              }
+              if (p.id === 'moon') {
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => handleSelect(p)}
+                    title={p.name}
+                    className={`w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer relative overflow-hidden ${
+                      isActive ? 'ring-2 ring-slate-200 scale-110 shadow-[0_0_12px_rgba(255,255,255,0.8)]' : 'opacity-80 hover:opacity-100'
+                    }`}
+                    style={{
+                      background: 'radial-gradient(circle at 35% 35%, #ffffff 0%, #cbd5e1 50%, #475569 100%)',
+                    }}
+                  />
                 );
               }
               return (
