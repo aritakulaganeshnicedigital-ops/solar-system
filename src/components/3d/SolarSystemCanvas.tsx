@@ -9,7 +9,6 @@ import { PlanetMesh } from './PlanetMesh';
 import { AsteroidBelt } from './AsteroidBelt';
 import { HabitableZone } from './HabitableZone';
 import { CameraController } from './CameraController';
-import { MilkyWayDome } from './MilkyWayDome';
 import { CosmicDust } from './CosmicDust';
 import { TwinklingStars } from './TwinklingStars';
 import { FieryAsteroid } from './FieryAsteroid';
@@ -103,29 +102,27 @@ export const SolarSystemCanvas: React.FC<SolarSystemCanvasProps> = ({
           }
         }}
       >
+        {/* Deep, pristine space black */}
         <color attach="background" args={['#020409']} />
 
         {/* Ambient lighting */}
         <ambientLight color="#182033" intensity={0.55} />
 
-        {/* Glowing Milky Way Celestial Dome */}
-        <MilkyWayDome revealOpacity={cinematicState.milkyWayOpacity} />
-
-        {/* Twinkling Stars that sparkle brighter one by one */}
+        {/* Natural Twinkling Stars */}
         <TwinklingStars brilliance={cinematicState.starBrilliance} />
 
-        {/* Background Deep Starfield */}
+        {/* Deep Cosmic Starfield */}
         <Stars
           radius={380}
           depth={90}
-          count={5000}
+          count={6000}
           factor={5}
-          saturation={0.8}
+          saturation={0.5}
           fade
           speed={0.8}
         />
 
-        {/* Gently Drifting Cosmic Dust */}
+        {/* Gently Drifting Natural Cosmic Dust */}
         <CosmicDust brilliance={cinematicState.dustBrilliance} />
 
         {/* Fiery Asteroid Streaking Across the Frame */}

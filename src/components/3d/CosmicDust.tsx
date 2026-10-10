@@ -7,24 +7,24 @@ interface CosmicDustProps {
   brilliance?: number;
 }
 
-export const CosmicDust: React.FC<CosmicDustProps> = ({ density = 1400, brilliance = 1.0 }) => {
+export const CosmicDust: React.FC<CosmicDustProps> = ({ density = 1200, brilliance = 1.0 }) => {
   const pointsRef = useRef<THREE.Points>(null);
 
-  // Generate 3D dust cloud distribution
+  // Generate 3D natural starlight dust cloud distribution
   const [positions, velocities, colors] = useMemo(() => {
     const pos = new Float32Array(density * 3);
     const vel = new Float32Array(density * 3);
     const col = new Float32Array(density * 3);
 
+    // Natural clean starlight palette (no pink)
     const palette = [
-      new THREE.Color('#38bdf8'), // Cyan
-      new THREE.Color('#c084fc'), // Violet
-      new THREE.Color('#fef08a'), // Warm gold
-      new THREE.Color('#e2e8f0'), // Starlight white
+      new THREE.Color('#38bdf8'), // Ice cyan
+      new THREE.Color('#94a3b8'), // Starlight slate
+      new THREE.Color('#f8fafc'), // Diamond white
+      new THREE.Color('#cbd5e1'), // Pale silver
     ];
 
     for (let i = 0; i < density; i++) {
-      // Distributed across radius 250 around camera space
       const r = 20 + Math.random() * 220;
       const theta = Math.random() * Math.PI * 2;
       const phi = (Math.random() - 0.5) * Math.PI;
@@ -33,12 +33,10 @@ export const CosmicDust: React.FC<CosmicDustProps> = ({ density = 1400, brillian
       pos[i * 3 + 1] = r * Math.sin(phi);
       pos[i * 3 + 2] = r * Math.cos(phi) * Math.sin(theta);
 
-      // Gentle drift velocity
-      vel[i * 3] = (Math.random() - 0.5) * 0.8;
-      vel[i * 3 + 1] = (Math.random() - 0.5) * 0.5;
-      vel[i * 3 + 2] = (Math.random() - 0.5) * 0.8;
+      vel[i * 3] = (Math.random() - 0.5) * 0.7;
+      vel[i * 3 + 1] = (Math.random() - 0.5) * 0.4;
+      vel[i * 3 + 2] = (Math.random() - 0.5) * 0.7;
 
-      // Color from palette
       const chosenColor = palette[Math.floor(Math.random() * palette.length)];
       col[i * 3] = chosenColor.r;
       col[i * 3 + 1] = chosenColor.g;
@@ -59,7 +57,6 @@ export const CosmicDust: React.FC<CosmicDustProps> = ({ density = 1400, brillian
       let y = posAttr.getY(i) + velocities[i * 3 + 1] * delta;
       let z = posAttr.getZ(i) + velocities[i * 3 + 2] * delta;
 
-      // Wrap boundaries
       if (x > 240) x = -240;
       else if (x < -240) x = 240;
       if (y > 180) y = -180;
@@ -80,10 +77,10 @@ export const CosmicDust: React.FC<CosmicDustProps> = ({ density = 1400, brillian
         <bufferAttribute attach="attributes-color" args={[colors, 3]} />
       </bufferGeometry>
       <pointsMaterial
-        size={1.2}
+        size={1.1}
         vertexColors
         transparent
-        opacity={Math.min(0.85, 0.45 * brilliance)}
+        opacity={Math.min(0.75, 0.4 * brilliance)}
         blending={THREE.AdditiveBlending}
         depthWrite={false}
       />
