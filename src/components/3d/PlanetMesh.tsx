@@ -105,10 +105,14 @@ export const PlanetMesh: React.FC<PlanetMeshProps> = ({
   }, [data.id, orbitDistance, registerPlanetPosition]);
 
   useFrame((_, delta) => {
-    // 1. Orbital position
+    // 1. Orbital position with calibrated, clearly visible orbital movement:
+    // Earth completes a revolution in ~22 seconds at 1x speed.
+    // Relative speeds follow Keplerian law scaled so outer planets remain visibly active.
     const currentSimTime = timeRef.current;
-    const orbitalSpeed = (2 * Math.PI) / (Math.max(10, data.orbitalPeriodDays) * 0.15);
-    const angle = orbitAngleOffset + currentSimTime * orbitalSpeed * 0.05;
+    const basePeriod = 365.25;
+    const speedMultiplier = Math.pow(basePeriod / Math.max(15, data.orbitalPeriodDays), 0.42);
+    const angularVelocity = 0.28 * speedMultiplier;
+    const angle = orbitAngleOffset + currentSimTime * angularVelocity;
 
     const x = Math.cos(angle) * orbitDistance;
     const z = Math.sin(angle) * orbitDistance;
@@ -117,20 +121,20 @@ export const PlanetMesh: React.FC<PlanetMeshProps> = ({
       groupRef.current.position.set(x, 0, z);
     }
 
-    // 2. Self rotation on axis
+    // 2. Visible self rotation on axis
     if (!isPaused && planetBodyRef.current) {
-      const spinSpeed = Math.sign(data.rotationPeriodHours) * Math.max(0.1, 24 / Math.abs(data.rotationPeriodHours || 24));
-      planetBodyRef.current.rotation.y += delta * 0.4 * spinSpeed;
+      const spinSpeed = Math.sign(data.rotationPeriodHours) * Math.max(0.25, 24 / Math.abs(data.rotationPeriodHours || 24));
+      planetBodyRef.current.rotation.y += delta * 1.0 * spinSpeed;
     }
 
     // 3. Cloud rotation for Earth/Venus
     if (!isPaused && cloudsRef.current) {
-      cloudsRef.current.rotation.y += delta * 0.45;
+      cloudsRef.current.rotation.y += delta * 1.15;
     }
 
     // 4. Moon orbit around Earth
     if (!isPaused && moonRef.current) {
-      moonRef.current.rotation.y += delta * 0.8;
+      moonRef.current.rotation.y += delta * 2.2;
     }
   });
 

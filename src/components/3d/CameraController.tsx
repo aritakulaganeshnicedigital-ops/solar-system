@@ -24,17 +24,27 @@ export const CameraController: React.FC<CameraControllerProps> = ({
   const { camera } = useThree();
 
   const isTransitioningRef = useRef(false);
+  const transitionTimeRef = useRef(0);
+  const startCamPos = useRef(new THREE.Vector3());
+  const startTargetPos = useRef(new THREE.Vector3());
+
   const targetLookAt = useRef(new THREE.Vector3(0, 0, 0));
   const targetCamPos = useRef(new THREE.Vector3(0, 85, 140));
 
   // Reset camera signal
   useEffect(() => {
     if (resetSignal > 0) {
-      isTransitioningRef.current = true;
+      const controls = controlsRef.current;
+      if (controls) {
+        startCamPos.current.copy(camera.position);
+        startTargetPos.current.copy(controls.target);
+      }
       targetLookAt.current.set(0, 0, 0);
       targetCamPos.current.set(0, 85, 140);
+      isTransitioningRef.current = true;
+      transitionTimeRef.current = 0;
     }
-  }, [resetSignal]);
+  }, [resetSignal, camera]);
 
   // Zoom In / Out signals
   useEffect(() => {
@@ -42,10 +52,8 @@ export const CameraController: React.FC<CameraControllerProps> = ({
     if (!controls || zoomSignal === 0) return;
 
     if (zoomSignal > 0) {
-      // Zoom closer
       camera.position.lerp(controls.target, 0.3);
     } else {
-      // Zoom out
       const dir = new THREE.Vector3().subVectors(camera.position, controls.target).normalize();
       const currentDist = camera.position.distanceTo(controls.target);
       camera.position.addScaledVector(dir, Math.max(10, currentDist * 0.3));
@@ -55,18 +63,14 @@ export const CameraController: React.FC<CameraControllerProps> = ({
 
   // Planet selection transition
   useEffect(() => {
-    if (selectedPlanet) {
-      isTransitioningRef.current = true;
-      const pos = getPlanetPosition(selectedPlanet.id) || new THREE.Vector3(selectedPlanet.artisticDistance, 0, 0);
-      targetLookAt.current.copy(pos);
-
-      // Offset camera based on planet radius with a dynamic angle
-      const dist = Math.max(3.8, selectedPlanet.radius * 2.8);
-      targetCamPos.current.set(pos.x + dist * 0.8, pos.y + dist * 0.45, pos.z + dist * 0.8);
-    } else {
-      targetLookAt.current.set(0, 0, 0);
+    const controls = controlsRef.current;
+    if (controls) {
+      startCamPos.current.copy(camera.position);
+      startTargetPos.current.copy(controls.target);
     }
-  }, [selectedPlanet, getPlanetPosition]);
+    isTransitioningRef.current = true;
+    transitionTimeRef.current = 0;
+  }, [selectedPlanet, camera]);
 
   useFrame((_, delta) => {
     const controls = controlsRef.current;
@@ -81,27 +85,28 @@ export const CameraController: React.FC<CameraControllerProps> = ({
     }
 
     if (selectedPlanet) {
-      // Dynamic tracking of moving planet
       const currentPos = getPlanetPosition(selectedPlanet.id);
       if (currentPos) {
+        const dist = Math.max(3.8, selectedPlanet.radius * 2.8);
+        const desiredCamPos = new THREE.Vector3(
+          currentPos.x + dist * 0.8,
+          currentPos.y + dist * 0.45,
+          currentPos.z + dist * 0.8
+        );
+
         if (isTransitioningRef.current) {
-          // Smooth transition to planet
-          controls.target.lerp(currentPos, delta * 3.5);
+          transitionTimeRef.current += delta;
+          const t = Math.min(1.0, transitionTimeRef.current / 1.1); // 1.1s smooth transition
+          const ease = 1 - Math.pow(1 - t, 3); // Cubic ease-out
 
-          const dist = Math.max(3.8, selectedPlanet.radius * 2.8);
-          const desiredPos = new THREE.Vector3(
-            currentPos.x + dist * 0.8,
-            currentPos.y + dist * 0.45,
-            currentPos.z + dist * 0.8
-          );
-          camera.position.lerp(desiredPos, delta * 2.5);
+          camera.position.lerpVectors(startCamPos.current, desiredCamPos, ease);
+          controls.target.lerpVectors(startTargetPos.current, currentPos, ease);
 
-          if (camera.position.distanceTo(desiredPos) < 0.4) {
+          if (t >= 1.0) {
             isTransitioningRef.current = false;
           }
         } else {
-          // After transition completes, camera tracks the planet continuously in orbit
-          // while preserving user's manual mouse rotation/zoom offset
+          // Continuous orbit tracking: camera position travels with moving planet
           const deltaTarget = new THREE.Vector3().subVectors(currentPos, controls.target);
           camera.position.add(deltaTarget);
           controls.target.copy(currentPos);
@@ -109,13 +114,14 @@ export const CameraController: React.FC<CameraControllerProps> = ({
       }
     } else if (isTransitioningRef.current) {
       // Resetting to Solar System overview
-      controls.target.lerp(targetLookAt.current, delta * 2.5);
-      camera.position.lerp(targetCamPos.current, delta * 2.5);
+      transitionTimeRef.current += delta;
+      const t = Math.min(1.0, transitionTimeRef.current / 1.0);
+      const ease = 1 - Math.pow(1 - t, 3);
 
-      if (
-        camera.position.distanceTo(targetCamPos.current) < 1.0 &&
-        controls.target.distanceTo(targetLookAt.current) < 0.5
-      ) {
+      camera.position.lerpVectors(startCamPos.current, targetCamPos.current, ease);
+      controls.target.lerpVectors(startTargetPos.current, targetLookAt.current, ease);
+
+      if (t >= 1.0) {
         isTransitioningRef.current = false;
       }
     }
