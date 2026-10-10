@@ -1,6 +1,6 @@
 import React from 'react';
-import { X, ExternalLink, Compass, Shield, Thermometer, Orbit, Wind, ArrowRight, Sparkles } from 'lucide-react';
-import { PlanetData } from '../../data/planetsData';
+import { X, Compass, Shield, Thermometer, Orbit, Wind, ArrowRight, Sparkles } from 'lucide-react';
+import type { PlanetData } from '../../data/planetsData';
 import { audioSystem } from '../../utils/audioSystem';
 
 interface PlanetInfoPanelProps {
@@ -16,9 +16,11 @@ export const PlanetInfoPanel: React.FC<PlanetInfoPanelProps> = ({
 }) => {
   if (!planet) return null;
 
+  const diameterKm = planet.realRadiusKm * 2;
+
   return (
-    <div className="fixed top-20 right-4 bottom-24 z-30 w-80 sm:w-96 pointer-events-none flex flex-col justify-end">
-      <div className="relative w-full max-h-full glass-panel rounded-2xl flex flex-col overflow-hidden pointer-events-auto border border-cyan-500/25 shadow-glass animate-in fade-in slide-in-from-right duration-300">
+    <div className="fixed top-16 sm:top-20 right-2 sm:right-4 bottom-20 sm:bottom-24 z-30 w-[calc(100vw-1rem)] sm:w-96 max-w-sm pointer-events-none flex flex-col justify-end">
+      <div className="relative w-full max-h-[85vh] sm:max-h-full glass-panel rounded-2xl flex flex-col overflow-hidden pointer-events-auto border border-cyan-500/25 shadow-glass animate-in fade-in slide-in-from-right duration-300">
         {/* HUD Tech Corner Accents */}
         <div className="hud-corner hud-tl" />
         <div className="hud-corner hud-tr" />
@@ -26,7 +28,7 @@ export const PlanetInfoPanel: React.FC<PlanetInfoPanelProps> = ({
         <div className="hud-corner hud-br" />
 
         {/* Panel Header */}
-        <div className="p-4 sm:p-5 border-b border-slate-800/80 bg-space-950/60 flex items-start justify-between gap-3">
+        <div className="p-4 sm:p-5 border-b border-slate-800/80 bg-space-950/70 flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             {/* Glowing Planet Orb Thumbnail */}
             <div
@@ -81,35 +83,35 @@ export const PlanetInfoPanel: React.FC<PlanetInfoPanelProps> = ({
 
           {/* Primary Scientific Telemetry Grid */}
           <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-            {/* Diameter */}
+            {/* 1. Diameter */}
             <div className="p-2.5 rounded-xl bg-space-900/60 border border-slate-800">
               <div className="text-[10px] text-slate-400 flex items-center gap-1.5 mb-1">
                 <Compass className="w-3 h-3 text-cyan-400" />
-                <span>MEAN RADIUS</span>
+                <span>MEAN DIAMETER</span>
               </div>
               <div className="font-bold text-slate-100">
-                {planet.realRadiusKm.toLocaleString()} km
+                {diameterKm.toLocaleString()} km
               </div>
-              <div className="text-[10px] text-slate-500">
-                {(planet.realRadiusKm / 6371).toFixed(2)}x Earth
+              <div className="text-[10px] text-cyan-300/80">
+                Radius: {planet.realRadiusKm.toLocaleString()} km
               </div>
             </div>
 
-            {/* Distance from Sun */}
+            {/* 2. Distance from Sun */}
             <div className="p-2.5 rounded-xl bg-space-900/60 border border-slate-800">
               <div className="text-[10px] text-slate-400 flex items-center gap-1.5 mb-1">
                 <Orbit className="w-3 h-3 text-violet-400" />
-                <span>SOLAR DISTANCE</span>
+                <span>DISTANCE FROM SUN</span>
               </div>
               <div className="font-bold text-slate-100">
                 {planet.distanceFromSunAU === 0 ? '0 AU' : `${planet.distanceFromSunAU} AU`}
               </div>
-              <div className="text-[10px] text-slate-500">
-                {planet.distanceFromSunKm === 0 ? 'Center' : `${planet.distanceFromSunKm}M km`}
+              <div className="text-[10px] text-slate-400">
+                {planet.distanceFromSunKm === 0 ? 'Central Star' : `${planet.distanceFromSunKm}M km`}
               </div>
             </div>
 
-            {/* Orbital Period */}
+            {/* 3. Orbital Period */}
             <div className="p-2.5 rounded-xl bg-space-900/60 border border-slate-800">
               <div className="text-[10px] text-slate-400 flex items-center gap-1.5 mb-1">
                 <Orbit className="w-3 h-3 text-emerald-400" />
@@ -122,28 +124,28 @@ export const PlanetInfoPanel: React.FC<PlanetInfoPanelProps> = ({
                   ? `${(planet.orbitalPeriodDays / 365.25).toFixed(1)} Earth Yrs`
                   : `${planet.orbitalPeriodDays.toFixed(1)} Days`}
               </div>
-              <div className="text-[10px] text-slate-500">
-                {planet.orbitSpeed > 0 ? `${planet.orbitSpeed}x velocity` : 'Stationary'}
+              <div className="text-[10px] text-slate-400">
+                {planet.orbitalPeriodDays === 0 ? 'Stationary' : `${planet.orbitalPeriodDays.toLocaleString()} Earth Days`}
               </div>
             </div>
 
-            {/* Rotation Day Length */}
+            {/* 4. Rotation Period (Day Length) */}
             <div className="p-2.5 rounded-xl bg-space-900/60 border border-slate-800">
               <div className="text-[10px] text-slate-400 flex items-center gap-1.5 mb-1">
                 <Compass className="w-3 h-3 text-amber-400" />
-                <span>DAY LENGTH</span>
+                <span>ROTATION PERIOD</span>
               </div>
               <div className="font-bold text-slate-100">
                 {Math.abs(planet.rotationPeriodHours) > 24
                   ? `${(Math.abs(planet.rotationPeriodHours) / 24).toFixed(1)} Earth Days`
                   : `${Math.abs(planet.rotationPeriodHours).toFixed(1)} Hours`}
               </div>
-              <div className="text-[10px] text-slate-500">
-                {planet.rotationPeriodHours < 0 ? 'Retrograde (Clockwise)' : 'Prograde'}
+              <div className="text-[10px] text-slate-400">
+                {planet.rotationPeriodHours < 0 ? 'Retrograde' : 'Prograde'} ({Math.abs(planet.rotationPeriodHours).toFixed(1)} hrs)
               </div>
             </div>
 
-            {/* Surface Temperature */}
+            {/* 5. Surface Temperature */}
             <div className="p-2.5 rounded-xl bg-space-900/60 border border-slate-800">
               <div className="text-[10px] text-slate-400 flex items-center gap-1.5 mb-1">
                 <Thermometer className="w-3 h-3 text-rose-400" />
@@ -157,11 +159,11 @@ export const PlanetInfoPanel: React.FC<PlanetInfoPanelProps> = ({
               </div>
             </div>
 
-            {/* Gravity */}
+            {/* 6. Surface Gravity */}
             <div className="p-2.5 rounded-xl bg-space-900/60 border border-slate-800">
               <div className="text-[10px] text-slate-400 flex items-center gap-1.5 mb-1">
                 <Shield className="w-3 h-3 text-blue-400" />
-                <span>SURFACE GRAVITY</span>
+                <span>GRAVITY</span>
               </div>
               <div className="font-bold text-slate-100">
                 {planet.gravityMps2} m/s²
@@ -176,7 +178,7 @@ export const PlanetInfoPanel: React.FC<PlanetInfoPanelProps> = ({
           <div className="p-3 rounded-xl bg-space-900/60 border border-slate-800">
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider">
-                Confirmed Satellites (Moons)
+                Confirmed Moons (Satellites)
               </span>
               <span className="text-xs font-mono font-bold text-cyan-accent">
                 {planet.moonsCount}

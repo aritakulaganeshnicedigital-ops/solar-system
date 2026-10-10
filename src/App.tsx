@@ -28,6 +28,7 @@ export const App: React.FC = () => {
   const [educationalMode, setEducationalMode] = useState(false);
   const [scaleMode, setScaleMode] = useState<'artistic' | 'real'>('artistic');
   const [resetSignal, setResetSignal] = useState(0);
+  const [zoomSignal, setZoomSignal] = useState(0);
 
   // UI Visibility States
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -44,6 +45,15 @@ export const App: React.FC = () => {
   const handleResetCamera = useCallback(() => {
     setSelectedPlanet(null);
     setResetSignal((prev) => prev + 1);
+  }, []);
+
+  // Zoom In & Out actions
+  const handleZoomIn = useCallback(() => {
+    setZoomSignal((prev) => (prev > 0 ? prev + 1 : 1));
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    setZoomSignal((prev) => (prev < 0 ? prev - 1 : -1));
   }, []);
 
   // Keyboard navigation & Shortcuts listener
@@ -66,6 +76,10 @@ export const App: React.FC = () => {
         else if (isDiscoverOpen) setIsDiscoverOpen(false);
         else if (isHelpOpen) setIsHelpOpen(false);
         else handleResetCamera();
+      } else if (e.key === '+' || e.key === '=') {
+        handleZoomIn();
+      } else if (e.key === '-' || e.key === '_') {
+        handleZoomOut();
       } else if (e.key.toLowerCase() === 'm') {
         audioSystem.toggleMute();
       } else if (e.key.toLowerCase() === 'h') {
@@ -96,7 +110,7 @@ export const App: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [explorerPlanet, isMissionsOpen, isComparisonOpen, isDiscoverOpen, isHelpOpen, handleResetCamera]);
+  }, [explorerPlanet, isMissionsOpen, isComparisonOpen, isDiscoverOpen, isHelpOpen, handleResetCamera, handleZoomIn, handleZoomOut]);
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-space-950 font-sans select-none">
@@ -116,6 +130,7 @@ export const App: React.FC = () => {
         simulationSpeed={simulationSpeed}
         isPaused={isPaused}
         resetSignal={resetSignal}
+        zoomSignal={zoomSignal}
         cinemaMode={cinemaMode}
       />
 
@@ -124,6 +139,8 @@ export const App: React.FC = () => {
         hoveredPlanet={hoveredPlanet}
         selectedPlanet={selectedPlanet}
         cinemaMode={cinemaMode}
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
       />
 
       {/* User Interface Overlays (hidden in cinema mode) */}

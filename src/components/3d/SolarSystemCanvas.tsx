@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useCallback } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Stars } from '@react-three/drei';
 import * as THREE from 'three';
@@ -21,10 +21,10 @@ interface SolarSystemCanvasProps {
   simulationSpeed: number;
   isPaused: boolean;
   resetSignal: number;
+  zoomSignal: number;
   cinemaMode: boolean;
 }
 
-// Inner helper to manage simulation clock across the scene
 const SimulationClock: React.FC<{
   isPaused: boolean;
   simulationSpeed: number;
@@ -50,6 +50,7 @@ export const SolarSystemCanvas: React.FC<SolarSystemCanvasProps> = ({
   simulationSpeed,
   isPaused,
   resetSignal,
+  zoomSignal,
   cinemaMode,
 }) => {
   const timeRef = useRef<number>(0);
@@ -73,7 +74,6 @@ export const SolarSystemCanvas: React.FC<SolarSystemCanvasProps> = ({
         camera={{ position: [0, 85, 140], fov: 45, near: 0.1, far: 2000 }}
         gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
         onPointerMissed={() => {
-          // Deselect planet if clicked in empty space
           onSelectPlanet(null);
         }}
       >
@@ -141,6 +141,7 @@ export const SolarSystemCanvas: React.FC<SolarSystemCanvasProps> = ({
           selectedPlanet={selectedPlanet}
           getPlanetPosition={getPlanetPosition}
           resetSignal={resetSignal}
+          zoomSignal={zoomSignal}
           cinemaMode={cinemaMode}
         />
       </Canvas>

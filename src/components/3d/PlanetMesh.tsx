@@ -53,6 +53,9 @@ export const PlanetMesh: React.FC<PlanetMeshProps> = ({
     return 15 + Math.log10(data.distanceFromSunAU + 1) * 65;
   }, [scaleMode, data.artisticDistance, data.distanceFromSunAU]);
 
+  // Clickable hit-box radius for easy clicking even from a distance
+  const hitRadius = Math.max(radius * 1.5, 3.2);
+
   // Textures
   const texture = useMemo(() => getPlanetTexture(data.id), [data.id]);
   const cloudsTexture = useMemo(() => (data.hasClouds ? getEarthCloudsTexture() : null), [data.hasClouds]);
@@ -142,12 +145,32 @@ export const PlanetMesh: React.FC<PlanetMeshProps> = ({
           color={isSelected ? '#00f0ff' : '#334155'}
           lineWidth={1}
           transparent
-          opacity={isSelected ? 0.75 : 0.28}
+          opacity={isSelected ? 0.8 : 0.28}
         />
       )}
 
       {/* Planet Group Container */}
       <group ref={groupRef}>
+        {/* Invisible enlarged click hit-box sphere */}
+        <mesh
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelect(data);
+          }}
+          onPointerOver={(e) => {
+            e.stopPropagation();
+            document.body.style.cursor = 'pointer';
+            onHover(data);
+          }}
+          onPointerOut={() => {
+            document.body.style.cursor = 'default';
+            onHover(null);
+          }}
+        >
+          <sphereGeometry args={[hitRadius, 16, 16]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+        </mesh>
+
         {/* Tilted Axis Group */}
         <group rotation={[tiltRad, 0, 0]}>
           {/* Planet Body Mesh */}
@@ -291,8 +314,8 @@ export const PlanetMesh: React.FC<PlanetMeshProps> = ({
               }}
               className={`group flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono tracking-wider transition-all duration-200 cursor-pointer pointer-events-auto backdrop-blur-md ${
                 isSelected
-                  ? 'bg-cyan-500/20 text-cyan-accent border border-cyan-400 shadow-[0_0_12px_rgba(0,240,255,0.4)]'
-                  : 'bg-space-900/80 text-slate-300 border border-slate-700/60 hover:border-cyan-400/60 hover:text-white'
+                  ? 'bg-cyan-500/25 text-cyan-accent border border-cyan-400 shadow-[0_0_14px_rgba(0,240,255,0.45)] ring-1 ring-cyan-400'
+                  : 'bg-space-900/85 text-slate-300 border border-slate-700/60 hover:border-cyan-400/60 hover:text-white'
               }`}
             >
               <span

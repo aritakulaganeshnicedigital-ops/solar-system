@@ -1,17 +1,22 @@
 import React from 'react';
-import { PlanetData } from '../../data/planetsData';
-import { Crosshair, Compass } from 'lucide-react';
+import type { PlanetData } from '../../data/planetsData';
+import { Plus, Minus } from 'lucide-react';
+import { audioSystem } from '../../utils/audioSystem';
 
 interface HUDOverlayProps {
   hoveredPlanet: PlanetData | null;
   selectedPlanet: PlanetData | null;
   cinemaMode: boolean;
+  onZoomIn: () => void;
+  onZoomOut: () => void;
 }
 
 export const HUDOverlay: React.FC<HUDOverlayProps> = ({
   hoveredPlanet,
   selectedPlanet,
   cinemaMode,
+  onZoomIn,
+  onZoomOut,
 }) => {
   if (cinemaMode) return null;
 
@@ -28,6 +33,30 @@ export const HUDOverlay: React.FC<HUDOverlayProps> = ({
           <div className="absolute left-0 right-0 top-1/2 h-[1px] bg-cyan-400/30 -translate-y-1/2 scale-x-125" />
         </div>
       )}
+
+      {/* Floating On-Screen Zoom Controls (Great for touch/mobile devices) */}
+      <div className="absolute right-4 bottom-24 hidden sm:flex flex-col gap-1.5 pointer-events-auto">
+        <button
+          onClick={() => {
+            audioSystem.playUiClick();
+            onZoomIn();
+          }}
+          title="Zoom In (+)"
+          className="w-8 h-8 rounded-xl glass-panel border border-slate-800 text-slate-300 hover:text-cyan-accent hover:border-cyan-500/40 flex items-center justify-center transition-all cursor-pointer shadow-md"
+        >
+          <Plus className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => {
+            audioSystem.playUiClick();
+            onZoomOut();
+          }}
+          title="Zoom Out (-)"
+          className="w-8 h-8 rounded-xl glass-panel border border-slate-800 text-slate-300 hover:text-cyan-accent hover:border-cyan-500/40 flex items-center justify-center transition-all cursor-pointer shadow-md"
+        >
+          <Minus className="w-4 h-4" />
+        </button>
+      </div>
 
       {/* Hover Information Tooltip Card */}
       {hoveredPlanet && (
