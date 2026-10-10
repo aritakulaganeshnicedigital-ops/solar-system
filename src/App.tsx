@@ -141,8 +141,18 @@ export const App: React.FC = () => {
         const planetList = PLANETS_DATA.filter((p) => p.id !== 'sun');
         const index = parseInt(e.key, 10) - 1;
         if (planetList[index]) {
-          audioSystem.playPlanetSelect();
+          if (planetList[index].id === 'black-hole') {
+            audioSystem.playBlackHoleSelect();
+          } else {
+            audioSystem.playPlanetSelect();
+          }
           setSelectedPlanet(planetList[index]);
+        }
+      } else if (e.key.toLowerCase() === 'b') {
+        const bh = PLANETS_DATA.find((p) => p.id === 'black-hole');
+        if (bh) {
+          audioSystem.playBlackHoleSelect();
+          setSelectedPlanet(bh);
         }
       } else if (e.key === '?') {
         setIsHelpOpen(true);
@@ -171,7 +181,13 @@ export const App: React.FC = () => {
       <SolarSystemCanvas
         selectedPlanet={selectedPlanet}
         onSelectPlanet={(planet) => {
-          if (planet) audioSystem.playPlanetSelect();
+          if (planet) {
+            if (planet.id === 'black-hole') {
+              audioSystem.playBlackHoleSelect();
+            } else {
+              audioSystem.playPlanetSelect();
+            }
+          }
           setSelectedPlanet(planet);
         }}
         onHoverPlanet={setHoveredPlanet}

@@ -100,16 +100,18 @@ export const CameraController: React.FC<CameraControllerProps> = ({
     if (selectedPlanet) {
       const currentPos = getPlanetPosition(selectedPlanet.id);
       if (currentPos) {
-        const dist = Math.max(3.8, selectedPlanet.radius * 2.8);
+        const dist = selectedPlanet.id === 'black-hole'
+          ? 32
+          : Math.max(3.8, selectedPlanet.radius * 2.8);
         const desiredCamPos = new THREE.Vector3(
-          currentPos.x + dist * 0.8,
-          currentPos.y + dist * 0.45,
-          currentPos.z + dist * 0.8
+          currentPos.x + dist * (selectedPlanet.id === 'black-hole' ? 0.72 : 0.8),
+          currentPos.y + dist * (selectedPlanet.id === 'black-hole' ? 0.38 : 0.45),
+          currentPos.z + dist * (selectedPlanet.id === 'black-hole' ? 0.72 : 0.8)
         );
 
         if (isTransitioningRef.current) {
           transitionTimeRef.current += delta;
-          const t = Math.min(1.0, transitionTimeRef.current / 1.1);
+          const t = Math.min(1.0, transitionTimeRef.current / (selectedPlanet.id === 'black-hole' ? 1.4 : 1.1));
           const ease = 1 - Math.pow(1 - t, 3);
 
           camera.position.lerpVectors(startCamPos.current, desiredCamPos, ease);
@@ -148,7 +150,7 @@ export const CameraController: React.FC<CameraControllerProps> = ({
       enableDamping
       dampingFactor={0.06}
       minDistance={1.8}
-      maxDistance={600}
+      maxDistance={1200}
       maxPolarAngle={Math.PI / 2 + 0.25}
     />
   );

@@ -20,7 +20,8 @@ import { PLANETS_DATA, PlanetData } from '../../data/planetsData';
 import {
   getPlanetTexture,
   getEarthCloudsTexture,
-  getSaturnRingsTexture
+  getSaturnRingsTexture,
+  getBlackHoleAccretionTexture
 } from '../../utils/textureGenerator';
 import { audioSystem } from '../../utils/audioSystem';
 
@@ -34,6 +35,7 @@ interface PlanetExplorerModalProps {
 const Interactive3DPlanet: React.FC<{ planet: PlanetData }> = ({ planet }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const cloudsRef = useRef<THREE.Mesh>(null);
+  const diskRef = useRef<THREE.Mesh>(null);
 
   const texture = useMemo(() => getPlanetTexture(planet.id), [planet.id]);
   const cloudsTexture = useMemo(
@@ -44,6 +46,10 @@ const Interactive3DPlanet: React.FC<{ planet: PlanetData }> = ({ planet }) => {
     () => (planet.id === 'saturn' ? getSaturnRingsTexture() : null),
     [planet.id]
   );
+  const accretionTexture = useMemo(
+    () => (planet.id === 'black-hole' ? getBlackHoleAccretionTexture() : null),
+    [planet.id]
+  );
 
   useFrame((_, delta) => {
     if (meshRef.current) {
@@ -52,9 +58,88 @@ const Interactive3DPlanet: React.FC<{ planet: PlanetData }> = ({ planet }) => {
     if (cloudsRef.current) {
       cloudsRef.current.rotation.y += delta * 0.32;
     }
+    if (diskRef.current) {
+      diskRef.current.rotation.z += delta * 1.6;
+    }
   });
 
   const tiltRad = (planet.axialTiltDeg * Math.PI) / 180;
+
+  if (planet.id === 'black-hole') {
+    return (
+      <group rotation={[tiltRad * 0.5, 0, Math.PI / 6]}>
+        {/* Event Horizon */}
+        <mesh>
+          <sphereGeometry args={[1.8, 64, 64]} />
+          <meshBasicMaterial color="#000000" depthWrite={true} />
+        </mesh>
+        {/* Photon Sphere Rim */}
+        <mesh scale={1.04}>
+          <sphereGeometry args={[1.8, 48, 48]} />
+          <meshBasicMaterial
+            color="#ffffff"
+            transparent
+            opacity={0.9}
+            side={THREE.BackSide}
+            blending={THREE.AdditiveBlending}
+          />
+        </mesh>
+        <mesh scale={1.09}>
+          <sphereGeometry args={[1.8, 48, 48]} />
+          <meshBasicMaterial
+            color="#f59e0b"
+            transparent
+            opacity={0.6}
+            side={THREE.BackSide}
+            blending={THREE.AdditiveBlending}
+          />
+        </mesh>
+        {/* Relativistic Accretion Disk */}
+        <mesh ref={diskRef} rotation={[Math.PI / 2.3, 0, 0]}>
+          <ringGeometry args={[2.2, 5.8, 96]} />
+          <meshBasicMaterial
+            map={accretionTexture || undefined}
+            side={THREE.DoubleSide}
+            transparent
+            opacity={0.96}
+            blending={THREE.AdditiveBlending}
+          />
+        </mesh>
+        {/* Lensed Vertical Ring */}
+        <mesh rotation={[0, 0, 0]}>
+          <ringGeometry args={[2.4, 4.2, 64]} />
+          <meshBasicMaterial
+            color="#f59e0b"
+            side={THREE.DoubleSide}
+            transparent
+            opacity={0.7}
+            blending={THREE.AdditiveBlending}
+          />
+        </mesh>
+        {/* Polar Jets */}
+        <mesh position={[0, 6, 0]}>
+          <cylinderGeometry args={[0.08, 0.45, 12, 16, 1, true]} />
+          <meshBasicMaterial
+            color="#00f0ff"
+            transparent
+            opacity={0.7}
+            side={THREE.DoubleSide}
+            blending={THREE.AdditiveBlending}
+          />
+        </mesh>
+        <mesh position={[0, -6, 0]}>
+          <cylinderGeometry args={[0.45, 0.08, 12, 16, 1, true]} />
+          <meshBasicMaterial
+            color="#a855f7"
+            transparent
+            opacity={0.7}
+            side={THREE.DoubleSide}
+            blending={THREE.AdditiveBlending}
+          />
+        </mesh>
+      </group>
+    );
+  }
 
   return (
     <group rotation={[tiltRad * 0.5, 0, 0]}>

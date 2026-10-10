@@ -17,20 +17,26 @@ export const PlanetSidebar: React.FC<PlanetSidebarProps> = ({
   setIsCollapsed,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<'All' | 'Terrestrial' | 'Gas Giant' | 'Ice Giant'>('All');
+  const [filterType, setFilterType] = useState<'All' | 'Terrestrial' | 'Gas Giant' | 'Ice Giant' | 'Singularity'>('All');
 
   const filteredPlanets = useMemo(() => {
     return PLANETS_DATA.filter((planet) => {
       const matchesSearch =
         planet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         planet.tagline.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesFilter = filterType === 'All' || planet.type === filterType;
+      const matchesFilter =
+        filterType === 'All' ||
+        (filterType === 'Singularity' ? planet.type === 'Black Hole' : planet.type === filterType);
       return matchesSearch && matchesFilter;
     });
   }, [searchQuery, filterType]);
 
   const handleSelect = (planet: PlanetData) => {
-    audioSystem.playPlanetSelect();
+    if (planet.id === 'black-hole') {
+      audioSystem.playBlackHoleSelect();
+    } else {
+      audioSystem.playPlanetSelect();
+    }
     onSelectPlanet(planet);
   };
 
@@ -83,7 +89,7 @@ export const PlanetSidebar: React.FC<PlanetSidebarProps> = ({
 
               {/* Filter Pills */}
               <div className="flex items-center gap-1 overflow-x-auto pb-1 no-scrollbar">
-                {(['All', 'Terrestrial', 'Gas Giant', 'Ice Giant'] as const).map((type) => (
+                {(['All', 'Terrestrial', 'Gas Giant', 'Ice Giant', 'Singularity'] as const).map((type) => (
                   <button
                     key={type}
                     onClick={() => {
@@ -113,31 +119,52 @@ export const PlanetSidebar: React.FC<PlanetSidebarProps> = ({
                     onMouseEnter={() => audioSystem.playUiHover()}
                     className={`group relative p-2.5 rounded-xl border transition-all duration-200 cursor-pointer flex items-center justify-between ${
                       isActive
-                        ? 'bg-cyan-500/15 border-cyan-400 shadow-[0_0_15px_rgba(0,240,255,0.25)]'
+                        ? planet.id === 'black-hole'
+                          ? 'bg-purple-950/40 border-purple-400 shadow-[0_0_18px_rgba(192,132,252,0.35)]'
+                          : 'bg-cyan-500/15 border-cyan-400 shadow-[0_0_15px_rgba(0,240,255,0.25)]'
                         : 'bg-space-900/40 border-slate-800/80 hover:border-slate-700 hover:bg-space-850/60'
                     }`}
                   >
                     {/* Active Pulsing Indicator Line */}
                     {isActive && (
-                      <div className="absolute left-0 top-2 bottom-2 w-1 bg-cyan-accent rounded-r shadow-cyan-glow" />
+                      <div className={`absolute left-0 top-2 bottom-2 w-1 rounded-r ${
+                        planet.id === 'black-hole' ? 'bg-purple-400 shadow-[0_0_8px_rgba(192,132,252,0.8)]' : 'bg-cyan-accent shadow-cyan-glow'
+                      }`} />
                     )}
 
                     <div className="flex items-center gap-3 pl-1">
-                      {/* Stylized Planet Thumbnail Orb */}
-                      <div
-                        className="relative w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-md transition-transform group-hover:scale-110"
-                        style={{
-                          background: `radial-gradient(circle at 30% 30%, ${planet.color}, ${planet.secondaryColor})`,
-                          boxShadow: isActive ? `0 0 12px ${planet.color}` : undefined,
-                        }}
-                      >
-                        {planet.hasRings && (
-                          <div
-                            className="absolute w-12 h-2 rounded-full border border-yellow-200/50 -rotate-12 pointer-events-none"
-                            style={{ borderColor: planet.ringsConfig?.color || '#e5c899' }}
-                          />
-                        )}
-                      </div>
+                      {/* Stylized Planet/Black Hole Thumbnail Orb */}
+                      {planet.id === 'black-hole' ? (
+                        <div
+                          className="relative w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-md transition-transform group-hover:scale-110"
+                          style={{
+                            boxShadow: isActive ? '0 0 16px rgba(192, 132, 252, 0.8)' : '0 0 8px rgba(192, 132, 252, 0.3)',
+                          }}
+                        >
+                          {/* Glowing Accretion Ring Halo */}
+                          <div className="absolute inset-[-3px] rounded-full border border-amber-400/80 animate-spin opacity-90 shadow-[0_0_8px_rgba(245,158,11,0.6)]" style={{ animationDuration: '4s' }} />
+                          <div className="absolute inset-[-1px] rounded-full border border-purple-400/70" />
+                          {/* Black Hole Shadow */}
+                          <div className="w-5 h-5 rounded-full bg-black relative z-10 ring-1 ring-amber-300" />
+                          {/* Polar Jets */}
+                          <div className="absolute -top-1 -bottom-1 w-[2px] bg-cyan-300 shadow-[0_0_4px_cyan] pointer-events-none" />
+                        </div>
+                      ) : (
+                        <div
+                          className="relative w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-md transition-transform group-hover:scale-110"
+                          style={{
+                            background: `radial-gradient(circle at 30% 30%, ${planet.color}, ${planet.secondaryColor})`,
+                            boxShadow: isActive ? `0 0 12px ${planet.color}` : undefined,
+                          }}
+                        >
+                          {planet.hasRings && (
+                            <div
+                              className="absolute w-12 h-2 rounded-full border border-yellow-200/50 -rotate-12 pointer-events-none"
+                              style={{ borderColor: planet.ringsConfig?.color || '#e5c899' }}
+                            />
+                          )}
+                        </div>
+                      )}
 
                       {/* Planet Names & Tagline */}
                       <div>
@@ -175,6 +202,21 @@ export const PlanetSidebar: React.FC<PlanetSidebarProps> = ({
             <span className="w-2 h-2 rounded-full bg-cyan-accent animate-pulse" />
             {PLANETS_DATA.map((p) => {
               const isActive = selectedPlanet?.id === p.id;
+              if (p.id === 'black-hole') {
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => handleSelect(p)}
+                    title={p.name}
+                    className={`w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer relative ${
+                      isActive ? 'ring-2 ring-purple-400 scale-110 shadow-[0_0_12px_rgba(192,132,252,0.8)]' : 'opacity-80 hover:opacity-100'
+                    }`}
+                  >
+                    <div className="absolute inset-0 rounded-full border border-amber-400/90 animate-spin" style={{ animationDuration: '3s' }} />
+                    <div className="w-4 h-4 rounded-full bg-black ring-1 ring-purple-400" />
+                  </button>
+                );
+              }
               return (
                 <button
                   key={p.id}

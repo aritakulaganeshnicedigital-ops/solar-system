@@ -116,5 +116,14 @@ export const COSMIC_FACTS: CosmicFact[] = [
     relatedPlanetId: 'sun',
     relatedPlanetName: 'Beyond Solar System',
     source: 'NASA Deep Space Network'
+  },
+  {
+    id: 'f13',
+    category: 'Physics',
+    title: 'Gravitational Time Dilation & The Gargantua Effect',
+    fact: 'Near a rotating Kerr black hole like Cygnus X-Omega, the immense gravitational curvature slows down time dramatically compared to Earth. One hour spent in orbit near its photon sphere equals over 7 years in deep space, and light from behind the black hole is bent directly over the top and bottom of the event horizon into a double-ring halo.',
+    relatedPlanetId: 'black-hole',
+    relatedPlanetName: 'Cygnus X-Omega (Black Hole)',
+    source: 'Astrophysical Journal / General Relativity'
   }
 ];

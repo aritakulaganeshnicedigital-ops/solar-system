@@ -30,21 +30,38 @@ export const PlanetInfoPanel: React.FC<PlanetInfoPanelProps> = ({
         {/* Panel Header */}
         <div className="p-4 sm:p-5 border-b border-slate-800/80 bg-space-950/70 flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            {/* Glowing Planet Orb Thumbnail */}
-            <div
-              className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 shadow-lg relative"
-              style={{
-                background: `radial-gradient(circle at 30% 30%, ${planet.color}, ${planet.secondaryColor})`,
-                boxShadow: `0 0 20px ${planet.color}66`,
-              }}
-            >
-              {planet.hasRings && (
-                <div
-                  className="absolute w-16 h-3 rounded-full border border-yellow-200/60 -rotate-12 pointer-events-none"
-                  style={{ borderColor: planet.ringsConfig?.color || '#e5c899' }}
-                />
-              )}
-            </div>
+            {/* Glowing Planet / Black Hole Orb Thumbnail */}
+            {planet.id === 'black-hole' ? (
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 shadow-lg relative overflow-visible"
+                style={{
+                  boxShadow: '0 0 24px rgba(192, 132, 252, 0.75)',
+                }}
+              >
+                {/* Relativistic Accretion Ring Halo */}
+                <div className="absolute -inset-1 rounded-full border-2 border-amber-400 animate-spin" style={{ animationDuration: '3.5s' }} />
+                <div className="absolute -inset-2.5 rounded-full border border-purple-500/50" />
+                {/* Black Hole Event Horizon */}
+                <div className="w-7 h-7 rounded-full bg-black relative z-10 ring-1 ring-amber-300" />
+                {/* Relativistic Jets */}
+                <div className="absolute -top-3 -bottom-3 w-[2.5px] bg-cyan-300 shadow-[0_0_8px_cyan] pointer-events-none" />
+              </div>
+            ) : (
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 shadow-lg relative"
+                style={{
+                  background: `radial-gradient(circle at 30% 30%, ${planet.color}, ${planet.secondaryColor})`,
+                  boxShadow: `0 0 20px ${planet.color}66`,
+                }}
+              >
+                {planet.hasRings && (
+                  <div
+                    className="absolute w-16 h-3 rounded-full border border-yellow-200/60 -rotate-12 pointer-events-none"
+                    style={{ borderColor: planet.ringsConfig?.color || '#e5c899' }}
+                  />
+                )}
+              </div>
+            )}
 
             <div>
               <div className="flex items-center gap-2">
@@ -178,7 +195,7 @@ export const PlanetInfoPanel: React.FC<PlanetInfoPanelProps> = ({
           <div className="p-3 rounded-xl bg-space-900/60 border border-slate-800">
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider">
-                Confirmed Moons (Satellites)
+                {planet.id === 'black-hole' ? 'Trapped Orbiters & Debris' : 'Confirmed Moons (Satellites)'}
               </span>
               <span className="text-xs font-mono font-bold text-cyan-accent">
                 {planet.moonsCount}

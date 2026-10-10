@@ -189,6 +189,44 @@ class CosmosAudioSystem {
       osc.stop(this.ctx.currentTime + 0.36);
     } catch {}
   }
+
+  public playBlackHoleSelect() {
+    if (this.isMuted || !this.ctx || !this.masterGain) return;
+    try {
+      const osc1 = this.ctx.createOscillator();
+      const osc2 = this.ctx.createOscillator();
+      const filter = this.ctx.createBiquadFilter();
+      const gain = this.ctx.createGain();
+
+      osc1.type = 'sawtooth';
+      osc2.type = 'sine';
+
+      // Deep downward gravitational pitch bend
+      osc1.frequency.setValueAtTime(140, this.ctx.currentTime);
+      osc1.frequency.exponentialRampToValueAtTime(32, this.ctx.currentTime + 0.65);
+
+      osc2.frequency.setValueAtTime(80, this.ctx.currentTime);
+      osc2.frequency.exponentialRampToValueAtTime(24, this.ctx.currentTime + 0.85);
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(280, this.ctx.currentTime);
+      filter.frequency.exponentialRampToValueAtTime(55, this.ctx.currentTime + 0.85);
+      filter.Q.setValueAtTime(4.5, this.ctx.currentTime);
+
+      gain.gain.setValueAtTime(0.24, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.9);
+
+      osc1.connect(filter);
+      osc2.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.masterGain);
+
+      osc1.start();
+      osc2.start();
+      osc1.stop(this.ctx.currentTime + 0.92);
+      osc2.stop(this.ctx.currentTime + 0.92);
+    } catch {}
+  }
 }
 
 export const audioSystem = new CosmosAudioSystem();

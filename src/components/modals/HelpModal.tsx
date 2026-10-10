@@ -100,6 +100,10 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                 <span className="px-2 py-0.5 rounded bg-white/10 text-white font-bold">Fullscreen</span>
               </div>
               <div className="p-2.5 rounded-xl bg-space-900/70 border border-slate-800 flex items-center justify-between">
+                <span className="text-slate-300">Key B</span>
+                <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-bold border border-purple-500/40">Black Hole</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-space-900/70 border border-slate-800 flex items-center justify-between">
                 <span className="text-slate-300">Key H</span>
                 <span className="px-2 py-0.5 rounded bg-white/10 text-white font-bold">Cinema HUD</span>
               </div>

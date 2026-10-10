@@ -730,6 +730,105 @@ export function getMilkyWayTexture(): THREE.CanvasTexture {
   return texture;
 }
 
+export function getBlackHoleAccretionTexture(): THREE.CanvasTexture {
+  if (textureCache.has('blackhole-accretion')) return textureCache.get('blackhole-accretion')!;
+
+  const size = 1024;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+
+  const cx = size / 2;
+  const cy = size / 2;
+  const rMax = size / 2;
+  const rMin = rMax * 0.28;
+
+  ctx.clearRect(0, 0, size, size);
+
+  // Radial base relativistic heat gradient
+  const radGrad = ctx.createRadialGradient(cx, cy, rMin, cx, cy, rMax);
+  radGrad.addColorStop(0, 'rgba(255, 255, 255, 1.0)');       // Pure white-hot innermost orbit
+  radGrad.addColorStop(0.08, 'rgba(254, 240, 138, 0.98)');   // Blinding golden glow
+  radGrad.addColorStop(0.22, 'rgba(249, 115, 22, 0.92)');    // Incandescent orange
+  radGrad.addColorStop(0.48, 'rgba(225, 29, 72, 0.85)');     // Relativistic crimson
+  radGrad.addColorStop(0.72, 'rgba(147, 51, 234, 0.65)');    // High-energy violet
+  radGrad.addColorStop(0.90, 'rgba(59, 7, 100, 0.35)');      // Deep cosmic indigo
+  radGrad.addColorStop(1.0, 'rgba(0, 0, 0, 0)');
+
+  ctx.fillStyle = radGrad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, rMax, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Swirling matter filaments and turbulent accretion streams
+  const numSpirals = 80;
+  for (let s = 0; s < numSpirals; s++) {
+    const startAngle = (s / numSpirals) * Math.PI * 2;
+    const spiralLen = 0.9 + Math.random() * 1.8;
+    ctx.beginPath();
+    for (let t = 0; t <= 1; t += 0.04) {
+      const r = rMin + t * (rMax - rMin) * 0.96;
+      const angle = startAngle + t * Math.PI * spiralLen;
+      const px = cx + Math.cos(angle) * r;
+      const py = cy + Math.sin(angle) * r;
+      if (t === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    const alpha = 0.18 + Math.random() * 0.4;
+    const colorPick = Math.random();
+    ctx.strokeStyle = colorPick > 0.6
+      ? `rgba(254, 240, 138, ${alpha})`
+      : colorPick > 0.3
+      ? `rgba(249, 115, 22, ${alpha})`
+      : `rgba(192, 132, 252, ${alpha})`;
+    ctx.lineWidth = 1.6 + Math.random() * 3.2;
+    ctx.stroke();
+  }
+
+  // Relativistic Doppler Beaming: Left hemisphere approaching observer is heavily amplified
+  const beamGrad = ctx.createLinearGradient(0, cy, size, cy);
+  beamGrad.addColorStop(0, 'rgba(255, 255, 255, 0.55)');
+  beamGrad.addColorStop(0.35, 'rgba(254, 240, 138, 0.3)');
+  beamGrad.addColorStop(0.65, 'rgba(0, 0, 0, 0.05)');
+  beamGrad.addColorStop(1, 'rgba(15, 5, 25, 0.45)');
+
+  ctx.globalCompositeOperation = 'overlay';
+  ctx.fillStyle = beamGrad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, rMax, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalCompositeOperation = 'source-over';
+
+  // Hollow out inner horizon cavity so shadow is razor sharp
+  ctx.save();
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.beginPath();
+  ctx.arc(cx, cy, rMin * 0.96, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  textureCache.set('blackhole-accretion', texture);
+  return texture;
+}
+
+export function getBlackHoleTexture(): THREE.CanvasTexture {
+  if (textureCache.has('blackhole-void')) return textureCache.get('blackhole-void')!;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 64;
+  canvas.height = 64;
+  const ctx = canvas.getContext('2d')!;
+  ctx.fillStyle = '#000000';
+  ctx.fillRect(0, 0, 64, 64);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  textureCache.set('blackhole-void', texture);
+  return texture;
+}
+
 export function getPlanetTexture(planetId: string): THREE.CanvasTexture {
   switch (planetId) {
     case 'sun':
@@ -752,6 +851,8 @@ export function getPlanetTexture(planetId: string): THREE.CanvasTexture {
       return getNeptuneTexture();
     case 'pluto':
       return getPlutoTexture();
+    case 'black-hole':
+      return getBlackHoleTexture();
     default:
       return getMercuryTexture();
   }

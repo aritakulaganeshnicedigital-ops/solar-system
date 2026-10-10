@@ -13,6 +13,7 @@ import { CosmicDust } from './CosmicDust';
 import { TwinklingStars } from './TwinklingStars';
 import { FieryAsteroid } from './FieryAsteroid';
 import { CinematicDirector } from './CinematicDirector';
+import { BlackHoleMesh } from './BlackHoleMesh';
 
 export interface CinematicState {
   asteroidProgress: number;
@@ -89,7 +90,8 @@ export const SolarSystemCanvas: React.FC<SolarSystemCanvasProps> = ({
   }, []);
 
   const sunData = PLANETS_DATA.find((p) => p.id === 'sun')!;
-  const planetList = PLANETS_DATA.filter((p) => p.id !== 'sun');
+  const blackHoleData = PLANETS_DATA.find((p) => p.id === 'black-hole');
+  const planetList = PLANETS_DATA.filter((p) => p.id !== 'sun' && p.id !== 'black-hole');
 
   return (
     <div className="w-full h-full relative cursor-grab active:cursor-grabbing">
@@ -163,6 +165,23 @@ export const SolarSystemCanvas: React.FC<SolarSystemCanvasProps> = ({
             registerPlanetPosition={registerPlanetPosition}
           />
         ))}
+
+        {/* The Majestic Gravitational Singularity (Black Hole Beyond Pluto) */}
+        {blackHoleData && (
+          <BlackHoleMesh
+            data={blackHoleData}
+            isSelected={selectedPlanet?.id === blackHoleData.id}
+            onSelect={onSelectPlanet}
+            onHover={onHoverPlanet}
+            showOrbits={showOrbits}
+            showLabels={showLabels}
+            scaleMode={scaleMode}
+            simulationSpeed={simulationSpeed}
+            isPaused={isPaused}
+            timeRef={timeRef}
+            registerPlanetPosition={registerPlanetPosition}
+          />
+        )}
 
         {/* Asteroid Belts */}
         <AsteroidBelt

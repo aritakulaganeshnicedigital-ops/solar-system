@@ -19,7 +19,7 @@ export interface PlanetData {
   id: string;
   name: string;
   tagline: string;
-  type: 'Star' | 'Terrestrial' | 'Gas Giant' | 'Ice Giant' | 'Dwarf Planet';
+  type: 'Star' | 'Terrestrial' | 'Gas Giant' | 'Ice Giant' | 'Dwarf Planet' | 'Black Hole';
   color: string; // Accent color hex
   secondaryColor: string;
   radius: number; // Artistic scale radius
@@ -673,6 +673,81 @@ export const PLANETS_DATA: PlanetData[] = [
     explorationMissions: ['New Horizons (Historic flyby July 14, 2015)'],
     description: 'The beloved dwarf planet at the inner edge of the Kuiper Belt, sporting a nitrogen heart glacier and dramatic water-ice peaks.',
     detailedDescription: 'When NASA’s New Horizons spacecraft flew past Pluto in 2015, it shattered expectations by revealing an active world with smooth nitrogen-ice plains, cryovolcanoes, towering mountain ranges of rock-hard water ice, and a tenuous blue-tinted atmospheric haze reaching hundreds of kilometers into space.'
+  },
+  {
+    id: 'black-hole',
+    name: 'Cygnus X-Omega',
+    tagline: 'Singularity · Beyond the Abyss',
+    type: 'Black Hole',
+    color: '#c084fc',
+    secondaryColor: '#f59e0b',
+    radius: 3.5,
+    realRadiusKm: 56.4,
+    distanceFromSunAU: 75.0,
+    distanceFromSunKm: 11220.0,
+    artisticDistance: 165,
+    orbitalPeriodDays: 240000.0,
+    rotationPeriodHours: 0.0008,
+    axialTiltDeg: 42.0,
+    orbitSpeed: 0.001,
+    massKg: '3.78 × 10³¹ kg (~19.0 Solar Masses)',
+    gravityMps2: 3.5e12,
+    surfaceTempC: { min: -273.15, avg: 12000000, max: 25000000 },
+    moonsCount: 3,
+    notableMoons: [
+      {
+        name: 'Relativistic Accretion Ring',
+        diameterKm: 420000,
+        orbitRadiusKm: 850000,
+        discoveryYear: 2026,
+        discoveredBy: 'Event Horizon Space Array',
+        description: 'Superheated incandescent plasma swirling into the event horizon at 0.45c with relativistic Doppler beaming.'
+      },
+      {
+        name: 'Trapped Micro-Pulsar PSR-B1919',
+        diameterKm: 22.0,
+        orbitRadiusKm: 2450000,
+        discoveryYear: 2026,
+        discoveredBy: 'Deep Space Gravitational Interferometer',
+        description: 'Compact neutron star caught in an extreme decaying orbit, emitting coherent radio bursts each epoch.'
+      },
+      {
+        name: 'Tidally Disrupted Comet Cluster',
+        diameterKm: 140.0,
+        orbitRadiusKm: 4900000,
+        discoveryYear: 2026,
+        discoveredBy: 'James Webb Deep Survey',
+        description: 'Icy Oort-cloud bodies spaghettified into a luminous stream of ionized gas feeding the outer disk.'
+      }
+    ],
+    hasRings: true,
+    ringsConfig: {
+      innerRadius: 4.8,
+      outerRadius: 14.5,
+      color: '#f59e0b',
+      opacity: 0.95,
+    },
+    atmosphereComposition: [
+      { gas: 'Superheated Relativistic Plasma (e⁻ / p⁺)', percentage: 92.5 },
+      { gas: 'Synchrotron Magnetic Flux', percentage: 6.2 },
+      { gas: 'Ultra-high Energy Cosmic Rays', percentage: 1.3 },
+    ],
+    internalStructure: [
+      { name: 'Ergosphere', thickness: '120 km radius', composition: 'Frame-dragged spacetime vortex', color: '#c084fc', description: 'Region outside the event horizon where spacetime itself is dragged faster than light. Energy can be extracted via the Penrose process.' },
+      { name: 'Photon Sphere (ISCO)', thickness: '84.6 km radius', composition: 'Trapped orbital light trajectories', color: '#fef08a', description: 'Unstable circular orbit where photons travel in endless circles, forming the razor-sharp glowing Einstein ring.' },
+      { name: 'Event Horizon', thickness: '56.4 km radius', composition: 'Point of no return (Rs = 2GM/c²)', color: '#09090b', description: 'The outer boundary where the escape velocity exactly equals the speed of light. Absolute darkness from which nothing escapes.' },
+      { name: 'Inner Cauchy Horizon', thickness: '28.0 km radius', composition: 'Quantum relativistic boundary', color: '#6366f1', description: 'Inner Cauchy horizon of a rotating Kerr black hole, separating causal spacetime from deep quantum instability.' },
+      { name: 'Gravitational Singularity', thickness: 'Point of zero volume', composition: 'Infinite density, spacetime curvature ∞', color: '#000000', description: 'The infinite density center where general relativity breaks down and quantum gravity reigns supreme.' },
+    ],
+    quickFacts: [
+      'Located 75 AU from the Sun, far past Pluto, anchoring the mysterious outer boundary of the Kuiper Cliff.',
+      'Gravitational lensing bends light from the rear of the accretion disk over and under the event horizon, producing the iconic Interstellar double-ring silhouette.',
+      'Extreme gravitational time dilation: 1 hour spent in close orbit near the photon sphere equals 7.4 years on Earth.',
+      'Shoots two colossal relativistic plasma jets thousands of kilometers into interstellar space from its north and south magnetic poles.'
+    ],
+    explorationMissions: ['Event Horizon Array (Deep Space VLBI)', 'James Webb Deep Void Survey', 'Project Icarus Gravitational Probe'],
+    description: 'A stellar-mass gravitational singularity situated far beyond Pluto, surrounded by a blinding relativistic accretion disk and immense spacetime distortion.',
+    detailedDescription: 'Dwelling in the frozen abyss past Pluto, Cygnus X-Omega is a 19-solar-mass rotating Kerr black hole. Its event horizon spans just 56 km across, yet its gravitational pull warps surrounding starlight into a breathtaking Einstein ring. Gas and cosmic dust spiraling inward at near-light speeds generate intense synchrotron radiation and two relativistic plasma jets that pierce the cosmic void.'
   }
 ];
 
