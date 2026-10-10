@@ -649,6 +649,87 @@ export function getMoonTexture(): THREE.CanvasTexture {
   return texture;
 }
 
+export function getMilkyWayTexture(): THREE.CanvasTexture {
+  if (textureCache.has('milkyway')) return textureCache.get('milkyway')!;
+
+  const width = 2048;
+  const height = 1024;
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d')!;
+
+  // Deep space abyss background
+  ctx.fillStyle = '#02040a';
+  ctx.fillRect(0, 0, width, height);
+
+  // Galactic core glow (Sagittarius A* region)
+  const cx = width * 0.5;
+  const cy = height * 0.5;
+
+  // Diagonal galactic disk angle (~25 degrees)
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(-0.35);
+
+  // Expansive outer diffuse nebula glow
+  const outerGrad = ctx.createRadialGradient(0, 0, 50, 0, 0, width * 0.6);
+  outerGrad.addColorStop(0, 'rgba(168, 85, 247, 0.45)');  // Violet center
+  outerGrad.addColorStop(0.25, 'rgba(59, 130, 246, 0.35)'); // Azure blue
+  outerGrad.addColorStop(0.5, 'rgba(236, 72, 153, 0.25)'); // Magenta
+  outerGrad.addColorStop(0.75, 'rgba(14, 165, 233, 0.15)'); // Cyan
+  outerGrad.addColorStop(1, 'rgba(2, 4, 10, 0)');
+  ctx.fillStyle = outerGrad;
+  ctx.fillRect(-width, -height * 0.6, width * 2, height * 1.2);
+
+  // Concentrated brilliant galactic core
+  const coreGrad = ctx.createRadialGradient(0, 0, 10, 0, 0, 280);
+  coreGrad.addColorStop(0, 'rgba(255, 250, 220, 0.95)');   // Golden white core
+  coreGrad.addColorStop(0.2, 'rgba(253, 224, 71, 0.8)');   // Warm amber
+  coreGrad.addColorStop(0.5, 'rgba(244, 114, 182, 0.5)');  // Pink emission nebula
+  coreGrad.addColorStop(0.8, 'rgba(147, 51, 234, 0.3)');   // Deep violet
+  coreGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = coreGrad;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 360, 140, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Dense cosmic dust rift lanes (the Great Rift)
+  ctx.fillStyle = 'rgba(4, 7, 16, 0.85)';
+  for (let i = 0; i < 40; i++) {
+    const rx = (Math.random() - 0.5) * width * 0.8;
+    const ry = (Math.random() - 0.5) * 80;
+    const rw = 80 + Math.random() * 200;
+    const rh = 15 + Math.random() * 45;
+    ctx.beginPath();
+    ctx.ellipse(rx, ry, rw, rh, Math.random() * 0.2 - 0.1, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Glittering star clouds and clusters
+  for (let i = 0; i < 2500; i++) {
+    const sx = (Math.random() - 0.5) * width * 0.9;
+    const sy = (Math.random() - 0.5) * height * 0.45;
+    const srad = Math.random() * 1.8;
+    const opacity = 0.3 + Math.random() * 0.7;
+    const isGolden = Math.random() > 0.75;
+
+    ctx.fillStyle = isGolden
+      ? `rgba(254, 240, 138, ${opacity})`
+      : `rgba(224, 242, 254, ${opacity})`;
+    ctx.beginPath();
+    ctx.arc(sx, sy, srad, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  textureCache.set('milkyway', texture);
+  return texture;
+}
+
 export function getPlanetTexture(planetId: string): THREE.CanvasTexture {
   switch (planetId) {
     case 'sun':
@@ -675,3 +756,4 @@ export function getPlanetTexture(planetId: string): THREE.CanvasTexture {
       return getMercuryTexture();
   }
 }
+

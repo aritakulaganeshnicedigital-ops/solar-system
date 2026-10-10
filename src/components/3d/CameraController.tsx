@@ -11,6 +11,8 @@ interface CameraControllerProps {
   resetSignal: number;
   zoomSignal: number;
   cinemaMode: boolean;
+  isCinematicActive?: boolean;
+  controlsRefExternal?: React.MutableRefObject<OrbitControlsImpl | null>;
 }
 
 export const CameraController: React.FC<CameraControllerProps> = ({
@@ -19,8 +21,11 @@ export const CameraController: React.FC<CameraControllerProps> = ({
   resetSignal,
   zoomSignal,
   cinemaMode,
+  isCinematicActive = false,
+  controlsRefExternal,
 }) => {
-  const controlsRef = useRef<OrbitControlsImpl>(null);
+  const localControlsRef = useRef<OrbitControlsImpl>(null);
+  const controlsRef = controlsRefExternal || localControlsRef;
   const { camera } = useThree();
 
   const isTransitioningRef = useRef(false);
@@ -33,7 +38,7 @@ export const CameraController: React.FC<CameraControllerProps> = ({
 
   // Reset camera signal
   useEffect(() => {
-    if (resetSignal > 0) {
+    if (resetSignal > 0 && !isCinematicActive) {
       const controls = controlsRef.current;
       if (controls) {
         startCamPos.current.copy(camera.position);
@@ -44,12 +49,12 @@ export const CameraController: React.FC<CameraControllerProps> = ({
       isTransitioningRef.current = true;
       transitionTimeRef.current = 0;
     }
-  }, [resetSignal, camera]);
+  }, [resetSignal, camera, isCinematicActive, controlsRef]);
 
   // Zoom In / Out signals
   useEffect(() => {
     const controls = controlsRef.current;
-    if (!controls || zoomSignal === 0) return;
+    if (!controls || zoomSignal === 0 || isCinematicActive) return;
 
     if (zoomSignal > 0) {
       camera.position.lerp(controls.target, 0.3);
@@ -59,10 +64,11 @@ export const CameraController: React.FC<CameraControllerProps> = ({
       camera.position.addScaledVector(dir, Math.max(10, currentDist * 0.3));
     }
     controls.update();
-  }, [zoomSignal, camera]);
+  }, [zoomSignal, camera, isCinematicActive, controlsRef]);
 
   // Planet selection transition
   useEffect(() => {
+    if (isCinematicActive) return;
     const controls = controlsRef.current;
     if (controls) {
       startCamPos.current.copy(camera.position);
@@ -70,11 +76,18 @@ export const CameraController: React.FC<CameraControllerProps> = ({
     }
     isTransitioningRef.current = true;
     transitionTimeRef.current = 0;
-  }, [selectedPlanet, camera]);
+  }, [selectedPlanet, camera, isCinematicActive, controlsRef]);
 
   useFrame((_, delta) => {
     const controls = controlsRef.current;
     if (!controls) return;
+
+    // During cinematic prologue sequence, disable manual controls
+    if (isCinematicActive) {
+      controls.enabled = false;
+      return;
+    }
+    controls.enabled = true;
 
     // Cinema Mode subtle slow drift
     if (cinemaMode && !selectedPlanet) {
@@ -96,8 +109,8 @@ export const CameraController: React.FC<CameraControllerProps> = ({
 
         if (isTransitioningRef.current) {
           transitionTimeRef.current += delta;
-          const t = Math.min(1.0, transitionTimeRef.current / 1.1); // 1.1s smooth transition
-          const ease = 1 - Math.pow(1 - t, 3); // Cubic ease-out
+          const t = Math.min(1.0, transitionTimeRef.current / 1.1);
+          const ease = 1 - Math.pow(1 - t, 3);
 
           camera.position.lerpVectors(startCamPos.current, desiredCamPos, ease);
           controls.target.lerpVectors(startTargetPos.current, currentPos, ease);
@@ -106,7 +119,7 @@ export const CameraController: React.FC<CameraControllerProps> = ({
             isTransitioningRef.current = false;
           }
         } else {
-          // Continuous orbit tracking: camera position travels with moving planet
+          // Continuous orbit tracking
           const deltaTarget = new THREE.Vector3().subVectors(currentPos, controls.target);
           camera.position.add(deltaTarget);
           controls.target.copy(currentPos);

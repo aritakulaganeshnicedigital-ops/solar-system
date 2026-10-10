@@ -11,7 +11,8 @@ import {
   Minimize2,
   Eye,
   EyeOff,
-  HelpCircle
+  HelpCircle,
+  Clapperboard
 } from 'lucide-react';
 import { audioSystem } from '../../utils/audioSystem';
 
@@ -24,6 +25,7 @@ interface TopNavProps {
   onOpenMissions: () => void;
   onOpenComparison: () => void;
   onOpenDiscover: () => void;
+  onPlayPrologue: () => void;
 }
 
 export const TopNav: React.FC<TopNavProps> = ({
@@ -35,6 +37,7 @@ export const TopNav: React.FC<TopNavProps> = ({
   onOpenMissions,
   onOpenComparison,
   onOpenDiscover,
+  onPlayPrologue,
 }) => {
   const [isMuted, setIsMuted] = React.useState(audioSystem.getMuted());
   const [isFullscreen, setIsFullscreen] = React.useState(false);
@@ -154,6 +157,19 @@ export const TopNav: React.FC<TopNavProps> = ({
           >
             <Sparkles className="w-3.5 h-3.5 text-violet-400" />
             <span>Discover</span>
+          </button>
+
+          {/* Cinematic Prologue Experience Button */}
+          <button
+            onClick={() => {
+              audioSystem.playUiClick();
+              onPlayPrologue();
+            }}
+            title="Launch Cinematic Prologue (Camera tilts up, fiery asteroid, Milky Way reveal)"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-medium text-cyan-accent bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/40 shadow-cyan-subtle transition-all cursor-pointer"
+          >
+            <Clapperboard className="w-3.5 h-3.5 text-cyan-300 animate-pulse" />
+            <span>Prologue</span>
           </button>
         </nav>
 

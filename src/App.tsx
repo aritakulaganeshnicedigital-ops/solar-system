@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { PLANETS_DATA, PlanetData } from './data/planetsData';
-import { SolarSystemCanvas } from './components/3d/SolarSystemCanvas';
+import { SolarSystemCanvas, CinematicState } from './components/3d/SolarSystemCanvas';
 import { TopNav } from './components/ui/TopNav';
 import { PlanetSidebar } from './components/ui/PlanetSidebar';
 import { PlanetInfoPanel } from './components/ui/PlanetInfoPanel';
 import { BottomControls } from './components/ui/BottomControls';
 import { HUDOverlay } from './components/ui/HUDOverlay';
+import { CinematicOverlay } from './components/ui/CinematicOverlay';
 import { PlanetExplorerModal } from './components/modals/PlanetExplorerModal';
 import { MissionsTimelineModal } from './components/modals/MissionsTimelineModal';
 import { ComparisonModal } from './components/modals/ComparisonModal';
@@ -34,6 +35,17 @@ export const App: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [cinemaMode, setCinemaMode] = useState(false);
 
+  // Cinematic Prologue State
+  const [isCinematicActive, setIsCinematicActive] = useState(false);
+  const [cinematicState, setCinematicState] = useState<CinematicState>({
+    asteroidProgress: 0,
+    asteroidActive: false,
+    milkyWayOpacity: 0.35,
+    starBrilliance: 1.0,
+    dustBrilliance: 1.0,
+    narrativeText: '',
+  });
+
   // Modals
   const [explorerPlanet, setExplorerPlanet] = useState<PlanetData | null>(null);
   const [isMissionsOpen, setIsMissionsOpen] = useState(false);
@@ -56,6 +68,25 @@ export const App: React.FC = () => {
     setZoomSignal((prev) => (prev < 0 ? prev - 1 : -1));
   }, []);
 
+  // Cinematic Prologue Trigger
+  const handleStartPrologue = useCallback(() => {
+    setSelectedPlanet(null);
+    setIsCinematicActive(true);
+  }, []);
+
+  const handleCompletePrologue = useCallback(() => {
+    setIsCinematicActive(false);
+    setCinematicState((prev) => ({
+      ...prev,
+      asteroidActive: false,
+      milkyWayOpacity: 0.45,
+      starBrilliance: 1.2,
+      dustBrilliance: 1.0,
+      narrativeText: '',
+    }));
+    handleResetCamera();
+  }, [handleResetCamera]);
+
   // Keyboard navigation & Shortcuts listener
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -69,13 +100,21 @@ export const App: React.FC = () => {
         audioSystem.playUiClick();
         setIsPaused((prev) => !prev);
       } else if (e.key === 'Escape') {
-        // Close modals if open, or reset camera
-        if (explorerPlanet) setExplorerPlanet(null);
-        else if (isMissionsOpen) setIsMissionsOpen(false);
-        else if (isComparisonOpen) setIsComparisonOpen(false);
-        else if (isDiscoverOpen) setIsDiscoverOpen(false);
-        else if (isHelpOpen) setIsHelpOpen(false);
-        else handleResetCamera();
+        if (isCinematicActive) {
+          handleCompletePrologue();
+        } else if (explorerPlanet) {
+          setExplorerPlanet(null);
+        } else if (isMissionsOpen) {
+          setIsMissionsOpen(false);
+        } else if (isComparisonOpen) {
+          setIsComparisonOpen(false);
+        } else if (isDiscoverOpen) {
+          setIsDiscoverOpen(false);
+        } else if (isHelpOpen) {
+          setIsHelpOpen(false);
+        } else {
+          handleResetCamera();
+        }
       } else if (e.key === '+' || e.key === '=') {
         handleZoomIn();
       } else if (e.key === '-' || e.key === '_') {
@@ -84,6 +123,8 @@ export const App: React.FC = () => {
         audioSystem.toggleMute();
       } else if (e.key.toLowerCase() === 'h') {
         setCinemaMode((prev) => !prev);
+      } else if (e.key.toLowerCase() === 'p') {
+        handleStartPrologue();
       } else if (e.key.toLowerCase() === 'f') {
         if (!document.fullscreenElement) {
           document.documentElement.requestFullscreen().catch(() => {});
@@ -110,7 +151,19 @@ export const App: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [explorerPlanet, isMissionsOpen, isComparisonOpen, isDiscoverOpen, isHelpOpen, handleResetCamera, handleZoomIn, handleZoomOut]);
+  }, [
+    explorerPlanet,
+    isMissionsOpen,
+    isComparisonOpen,
+    isDiscoverOpen,
+    isHelpOpen,
+    isCinematicActive,
+    handleResetCamera,
+    handleZoomIn,
+    handleZoomOut,
+    handleStartPrologue,
+    handleCompletePrologue,
+  ]);
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-space-950 font-sans select-none">
@@ -132,19 +185,30 @@ export const App: React.FC = () => {
         resetSignal={resetSignal}
         zoomSignal={zoomSignal}
         cinemaMode={cinemaMode}
+        isCinematicActive={isCinematicActive}
+        onCompleteCinematic={handleCompletePrologue}
+        cinematicState={cinematicState}
+        setCinematicState={setCinematicState}
+      />
+
+      {/* Cinematic Overlay (when prologue is active) */}
+      <CinematicOverlay
+        isActive={isCinematicActive}
+        narrativeText={cinematicState.narrativeText}
+        onSkip={handleCompletePrologue}
       />
 
       {/* Sci-Fi HUD Crosshair & Hover Tooltip */}
       <HUDOverlay
         hoveredPlanet={hoveredPlanet}
         selectedPlanet={selectedPlanet}
-        cinemaMode={cinemaMode}
+        cinemaMode={cinemaMode || isCinematicActive}
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
       />
 
-      {/* User Interface Overlays (hidden in cinema mode) */}
-      {!cinemaMode && (
+      {/* User Interface Overlays (hidden during cinematic sequence or cinema mode) */}
+      {!cinemaMode && !isCinematicActive && (
         <>
           {/* Top Navigation */}
           <TopNav
@@ -161,6 +225,7 @@ export const App: React.FC = () => {
             onOpenMissions={() => setIsMissionsOpen(true)}
             onOpenComparison={() => setIsComparisonOpen(true)}
             onOpenDiscover={() => setIsDiscoverOpen(true)}
+            onPlayPrologue={handleStartPrologue}
           />
 
           {/* Left Planet Radar Sidebar */}
@@ -205,7 +270,7 @@ export const App: React.FC = () => {
       )}
 
       {/* Floating Cinema Exit Button when Cinema Mode is active */}
-      {cinemaMode && (
+      {cinemaMode && !isCinematicActive && (
         <button
           onClick={() => {
             audioSystem.playUiClick();

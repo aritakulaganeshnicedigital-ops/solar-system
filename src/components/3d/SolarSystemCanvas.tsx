@@ -1,6 +1,7 @@
 import React, { useRef, useCallback } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Stars } from '@react-three/drei';
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import * as THREE from 'three';
 import { PLANETS_DATA, PlanetData } from '../../data/planetsData';
 import { SunMesh } from './SunMesh';
@@ -8,6 +9,20 @@ import { PlanetMesh } from './PlanetMesh';
 import { AsteroidBelt } from './AsteroidBelt';
 import { HabitableZone } from './HabitableZone';
 import { CameraController } from './CameraController';
+import { MilkyWayDome } from './MilkyWayDome';
+import { CosmicDust } from './CosmicDust';
+import { TwinklingStars } from './TwinklingStars';
+import { FieryAsteroid } from './FieryAsteroid';
+import { CinematicDirector } from './CinematicDirector';
+
+export interface CinematicState {
+  asteroidProgress: number;
+  asteroidActive: boolean;
+  milkyWayOpacity: number;
+  starBrilliance: number;
+  dustBrilliance: number;
+  narrativeText: string;
+}
 
 interface SolarSystemCanvasProps {
   selectedPlanet: PlanetData | null;
@@ -23,6 +38,10 @@ interface SolarSystemCanvasProps {
   resetSignal: number;
   zoomSignal: number;
   cinemaMode: boolean;
+  isCinematicActive: boolean;
+  onCompleteCinematic: () => void;
+  cinematicState: CinematicState;
+  setCinematicState: React.Dispatch<React.SetStateAction<CinematicState>>;
 }
 
 const SimulationClock: React.FC<{
@@ -52,8 +71,13 @@ export const SolarSystemCanvas: React.FC<SolarSystemCanvasProps> = ({
   resetSignal,
   zoomSignal,
   cinemaMode,
+  isCinematicActive,
+  onCompleteCinematic,
+  cinematicState,
+  setCinematicState,
 }) => {
   const timeRef = useRef<number>(0);
+  const controlsRef = useRef<OrbitControlsImpl | null>(null);
   const planetPositionsRef = useRef<Map<string, () => THREE.Vector3>>(new Map());
 
   const registerPlanetPosition = useCallback((id: string, getPos: () => THREE.Vector3) => {
@@ -71,26 +95,43 @@ export const SolarSystemCanvas: React.FC<SolarSystemCanvasProps> = ({
   return (
     <div className="w-full h-full relative cursor-grab active:cursor-grabbing">
       <Canvas
-        camera={{ position: [0, 85, 140], fov: 45, near: 0.1, far: 2000 }}
+        camera={{ position: [0, 85, 140], fov: 45, near: 0.1, far: 2500 }}
         gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
         onPointerMissed={() => {
-          onSelectPlanet(null);
+          if (!isCinematicActive) {
+            onSelectPlanet(null);
+          }
         }}
       >
-        <color attach="background" args={['#030509']} />
+        <color attach="background" args={['#020409']} />
 
-        {/* Deep space ambience lighting */}
+        {/* Ambient lighting */}
         <ambientLight color="#182033" intensity={0.55} />
 
-        {/* Realistic Cosmic Starfield */}
+        {/* Glowing Milky Way Celestial Dome */}
+        <MilkyWayDome revealOpacity={cinematicState.milkyWayOpacity} />
+
+        {/* Twinkling Stars that sparkle brighter one by one */}
+        <TwinklingStars brilliance={cinematicState.starBrilliance} />
+
+        {/* Background Deep Starfield */}
         <Stars
-          radius={350}
+          radius={380}
           depth={90}
-          count={7000}
-          factor={6}
+          count={5000}
+          factor={5}
           saturation={0.8}
           fade
           speed={0.8}
+        />
+
+        {/* Gently Drifting Cosmic Dust */}
+        <CosmicDust brilliance={cinematicState.dustBrilliance} />
+
+        {/* Fiery Asteroid Streaking Across the Frame */}
+        <FieryAsteroid
+          progress={cinematicState.asteroidProgress}
+          active={cinematicState.asteroidActive}
         />
 
         {/* Global Simulation Time Driver */}
@@ -136,13 +177,23 @@ export const SolarSystemCanvas: React.FC<SolarSystemCanvasProps> = ({
         {/* Circumstellar Habitable Zone (Educational Mode) */}
         <HabitableZone show={educationalMode} />
 
-        {/* Cinematic Camera Controller & OrbitControls */}
+        {/* Camera Controller & OrbitControls */}
         <CameraController
           selectedPlanet={selectedPlanet}
           getPlanetPosition={getPlanetPosition}
           resetSignal={resetSignal}
           zoomSignal={zoomSignal}
           cinemaMode={cinemaMode}
+          isCinematicActive={isCinematicActive}
+          controlsRefExternal={controlsRef}
+        />
+
+        {/* Cinematic Sequence Director */}
+        <CinematicDirector
+          isPlaying={isCinematicActive}
+          onComplete={onCompleteCinematic}
+          setCinematicState={setCinematicState}
+          controlsRef={controlsRef}
         />
       </Canvas>
     </div>
